@@ -1,0 +1,12 @@
+{
+  "name": "painel-loja-maconaria",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check app.js && node --check server.js && node --check api/store.js && node --check api/brothers/index.js && node --check api/sessions/index.js"
+  },
+  "dependencies": {
+    "postgres": "^3.4.5"
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "brothers": [
+    {
+      "id": "b1",
+      "name": "Fabio Luis Pocai",
+      "address": "Rua das Ac�cias, 100 - Centro",
+      "phone": "(43) 99999-1000",
+      "birthDate": "1972-03-14",
+      "cim": "25675",
+      "degree": "mestre",
+      "initiationDate": "2001-05-11",
+      "elevationDate": "2002-08-16",
+      "exaltationDate": "2004-09-10",
+      "emeritoDate": "2029-09-10",
+      "benemeritoDate": "2034-09-10",
+      "wifeName": "Marcia Pocai",
+      "wifeBirthDate": "1975-03-19",
+      "wifePhone": "(43) 99999-1001"
+    },
+    {
+      "id": "b2",
+      "name": "Marcelo Olivari",
+      "address": "Av. Templ�rios, 450 - Jardim",
+      "phone": "(43) 99999-2000",
+      "birthDate": "1981-07-21",
+      "cim": "22508",
+      "degree": "companheiro",
+      "initiationDate": "2015-03-06",
+      "elevationDate": "2016-04-08",
+      "exaltationDate": "",
+      "emeritoDate": "2040-04-08",
+      "benemeritoDate": "2045-04-08",
+      "wifeName": "Egle Olivari",
+      "wifeBirthDate": "1966-03-01",
+      "wifePhone": "(43) 99999-2001"
+    },
+    {
+      "id": "b3",
+      "name": "Leandro Camilloti",
+      "address": "Rua Harmonia, 78 - Vila Nova",
+      "phone": "(43) 99999-3000",
+      "birthDate": "1980-03-07",
+      "cim": "18020",
+      "degree": "aprendiz",
+      "initiationDate": "2025-11-13",
+      "elevationDate": "",
+      "exaltationDate": "",
+      "emeritoDate": "2050-11-13",
+      "benemeritoDate": "2055-11-13",
+      "wifeName": "Carla Camilloti",
+      "wifeBirthDate": "1982-11-05",
+      "wifePhone": "(43) 99999-3001"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "s1",
+      "datetime": "2026-02-26T20:00",
+      "theme": "Sess�o Ordin�ria",
+      "notes": "Planejamento do trimestre.",
+      "degree": "companheiro",
+      "attendance": [
+        "b1",
+        "b2"
+      ],
+      "visitors": [
+        {
+          "id": "v1",
+          "name": "Carlos Mendes",
+          "lodge": "A.R.L.S. Luz do Norte",
+          "city": "Londrina"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "datetime": "2026-02-19T20:00",
+      "theme": "1� Instru��o",
+      "notes": "Trabalho ritual�stico.",
+      "degree": "aprendiz",
+      "attendance": [
+        "b1",
+        "b2",
+        "b3"
+      ],
+      "visitors": [
+        {
+          "id": "v2",
+          "name": "Antonio Ribeiro",
+          "lodge": "A.R.L.S. Fraternidade",
+          "city": "Camb�"
+        },
+        {
+          "id": "v3",
+          "name": "Carlos Mendes",
+          "lodge": "A.R.L.S. Luz do Norte",
+          "city": "Londrina"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "datetime": "2026-02-11T20:00",
+      "theme": "Sess�o Magna",
+      "notes": "Recep��o de visitantes.",
+      "degree": "mestre",
+      "attendance": [
+        "b1"
+      ],
+      "visitors": [
+        {
+          "id": "v4",
+          "name": "Ricardo Nunes",
+          "lodge": "A.R.L.S. Estrela do Sul",
+          "city": "Arapongas"
+        }
+      ]
+    }
+  ]
+}

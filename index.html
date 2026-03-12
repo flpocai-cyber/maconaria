@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Loja - Controle de Presença</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>Painel da Loja</strong>
+          <span>Controle de presença</span>
+        </div>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-link active" data-view="dashboard">Painel</button>
+        <button class="nav-link" data-view="brothers">Irmãos do quadro</button>
+        <button class="nav-link" data-view="sessions">Sessões</button>
+        <button class="nav-link" data-view="reports">Relatórios</button>
+        <button class="nav-link" data-view="calendar">Calendário</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">A.R.L.S.</p>
+          <h1>Sistema de Presença da Loja</h1>
+        </div>
+        <div class="topbar-meta">
+          <span id="todayLabel"></span>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view active"></section>
+      <section id="brothers" class="view"></section>
+      <section id="sessions" class="view"></section>
+      <section id="reports" class="view"></section>
+      <section id="calendar" class="view"></section>
+    </main>
+  </div>
+
+  <template id="dashboardTemplate">
+    <div class="dashboard-grid">
+      <article class="hero-card">
+        <div>
+          <p class="eyebrow">Visão geral</p>
+          <h2 id="dashboardGreeting">Bem-vindo</h2>
+          <p id="dashboardSubtitle">Acompanhe sessões, presenças e aniversários em um só lugar.</p>
+        </div>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Irmãos do quadro</span>
+        <strong id="brothersCount">0</strong>
+        <small>cadastros ativos</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Sessões</span>
+        <strong id="sessionsCount">0</strong>
+        <small>registradas</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Visitantes</span>
+        <strong id="visitorsCount">0</strong>
+        <small>lançados nas sessões</small>
+      </article>
+      <article class="panel-card chart-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Frequência geral</p>
+            <h3>Distribuição das sessões</h3>
+          </div>
+        </div>
+        <div class="pie-layout">
+          <div id="dashboardPie" class="pie-chart"></div>
+          <div id="dashboardLegend" class="legend-list"></div>
+        </div>
+      </article>
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Aniversários</p>
+            <h3>Próximas datas</h3>
+          </div>
+        </div>
+        <div id="birthdayHighlights" class="stack-list"></div>
+      </article>
+      <article class="panel-card span-2">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Calendário</p>
+            <h3>Agenda de aniversários</h3>
+          </div>
+        </div>
+        <div id="dashboardCalendar"></div>
+      </article>
+    </div>
+  </template>
+
+  <template id="brothersTemplate">
+    <div class="content-grid">
+      <article class="panel-card form-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Cadastro</p>
+            <h2>Irmão do quadro</h2>
+          </div>
+        </div>
+        <form id="brotherForm" class="form-grid"></form>
+      </article>
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Quadro da loja</p>
+            <h2>Irmãos cadastrados</h2>
+          </div>
+          <input id="brotherSearch" class="search-input" type="search" placeholder="Pesquisar por nome, CIM ou grau">
+        </div>
+        <div id="brothersTable"></div>
+      </article>
+    </div>
+  </template>
+
+  <template id="sessionsTemplate">
+    <div class="content-grid">
+      <article class="panel-card form-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Sessão</p>
+            <h2>Nova sessão</h2>
+          </div>
+        </div>
+        <form id="sessionForm" class="form-grid"></form>
+      </article>
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Sessões cadastradas</p>
+            <h2>Livro de presença</h2>
+          </div>
+          <input id="sessionSearch" class="search-input" type="search" placeholder="Pesquisar por tema ou observação">
+        </div>
+        <div id="sessionsList"></div>
+      </article>
+    </div>
+  </template>
+
+  <template id="reportsTemplate">
+    <div class="reports-layout">
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Relatório</p>
+            <h2>Irmãos do quadro</h2>
+          </div>
+        </div>
+        <div id="brothersReportControls"></div>
+        <div id="brothersReportTable"></div>
+      </article>
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Relatório</p>
+            <h2>Presenças por período</h2>
+          </div>
+        </div>
+        <div id="attendanceReportControls"></div>
+        <div class="report-summary">
+          <div id="attendancePie" class="pie-chart large"></div>
+          <div id="attendanceLegend" class="legend-list"></div>
+        </div>
+        <div id="attendanceReportTable"></div>
+      </article>
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Relatório</p>
+            <h2>Visitantes frequentes</h2>
+          </div>
+        </div>
+        <div id="visitorsReportControls"></div>
+        <div id="visitorsReportTable"></div>
+      </article>
+    </div>
+  </template>
+
+  <template id="calendarTemplate">
+    <div class="content-grid">
+      <article class="panel-card span-2">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Calendário</p>
+            <h2>Aniversários de irmãos e esposas</h2>
+          </div>
+        </div>
+        <div id="calendarContent"></div>
+      </article>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
