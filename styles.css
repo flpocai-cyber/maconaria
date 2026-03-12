@@ -8,6 +8,20 @@
   --line: #e5e7eb;
   --muted: #64748b;
   --shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  --topbar: #112033;
+  --topbar-text: #f8fafc;
+}
+
+body[data-theme="dark"] {
+  --secondary: #e5edf6;
+  --background: #0b1220;
+  --panel: #111c2d;
+  --panel-alt: #0f172a;
+  --line: #243247;
+  --muted: #9aa9bc;
+  --shadow: 0 16px 40px rgba(2, 6, 23, 0.36);
+  --topbar: #07101d;
+  --topbar-text: #f8fafc;
 }
 
 * {
@@ -19,6 +33,7 @@ body {
   background: var(--background);
   color: var(--secondary);
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 button,
@@ -34,6 +49,129 @@ textarea {
 
 .view.active {
   display: block;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--topbar);
+  color: var(--topbar-text);
+}
+
+.brand-wrap,
+.topbar-actions,
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand-mark,
+.profile-avatar {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #4aa7ad, #7fd4c2);
+  color: #fff;
+}
+
+.profile-avatar {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.brand-title,
+.brand-subtitle,
+.profile-meta {
+  margin: 0;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.brand-subtitle,
+.profile-meta span {
+  color: rgba(248, 250, 252, 0.7);
+  font-size: 0.8rem;
+}
+
+.profile-meta strong {
+  display: block;
+  color: #fff;
+}
+
+.theme-toggle,
+.help-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.8rem 1.5rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.menu-link {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu-link.active,
+.menu-link:hover {
+  background: rgba(138, 0, 0, 0.1);
+  color: var(--primary);
+}
+
+.main-shell {
+  padding: 1.5rem;
+}
+
+.content-wrap {
+  width: 100%;
+}
+
+.lodge-banner {
+  max-width: 80rem;
+  margin: 0 auto 1.25rem;
+}
+
+.lodge-name {
+  margin: 0.2rem 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.12;
 }
 
 .nav-link {
@@ -621,12 +759,32 @@ tr:last-child td {
   .form-panel {
     position: static;
   }
+
+  .topbar,
+  .topnav,
+  .main-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 @media (max-width: 720px) {
-  main {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-actions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .profile-chip {
+    width: 100%;
+  }
+
+  .main-shell {
+    padding: 1rem;
   }
 
   .form-grid,
@@ -663,5 +821,9 @@ tr:last-child td {
   .pie-chart.large {
     width: 180px;
     height: 180px;
+  }
+
+  .lodge-name {
+    font-size: 1.55rem;
   }
 }

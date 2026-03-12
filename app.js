@@ -55,6 +55,12 @@ function escapeHtml(value) {
 }
 function monthLabel(date) { return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date); }
 function capitalize(value) { return value ? value.charAt(0).toUpperCase() + value.slice(1) : ""; }
+function getStoredTheme() { return localStorage.getItem("theme-mode") || "light"; }
+function applyTheme(mode) {
+  document.body.dataset.theme = mode;
+  const icon = qs("#themeToggleIcon");
+  if (icon) icon.textContent = mode === "dark" ? "☀" : "☾";
+}
 function normalizeBrokenText(value) {
   const source = String(value || "");
   const replacements = [
@@ -181,9 +187,15 @@ function renderPieChart(element, legendElement, items) {
 
 function renderShell() {
   qs("#todayLabel").textContent = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }).format(new Date());
-  qsa(".nav-link").forEach((button) => {
+  applyTheme(getStoredTheme());
+  qs("#themeToggle").onclick = () => {
+    const next = document.body.dataset.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("theme-mode", next);
+    applyTheme(next);
+  };
+  qsa(".menu-link").forEach((button) => {
     button.onclick = () => {
-      qsa(".nav-link").forEach((item) => {
+      qsa(".menu-link").forEach((item) => {
         item.classList.remove("active");
         item.classList.remove("active-nav-item");
       });

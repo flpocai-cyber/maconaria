@@ -27,53 +27,54 @@
   </script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-background pb-24 text-secondary">
-  <header class="bg-white border-b border-gray-100 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-primary rounded-custom flex items-center justify-center text-white font-bold text-lg">A</div>
-      <div>
-        <h1 class="text-lg font-bold text-secondary leading-tight">Painel da Loja</h1>
-        <p class="text-xs text-gray-500">Controle de presen&ccedil;a</p>
+<body class="bg-background text-secondary">
+  <header class="site-header">
+    <div class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">A</div>
+        <div>
+          <h1 class="brand-title">Painel da Loja</h1>
+          <p class="brand-subtitle">Controle de presen&ccedil;a</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+          <span id="themeToggleIcon">◐</span>
+        </button>
+        <button type="button" class="help-btn" aria-label="Ajuda">?</button>
+        <div class="profile-chip">
+          <div class="profile-avatar">FP</div>
+          <div class="profile-meta">
+            <strong>F&aacute;bio Lu&iacute;s Pocai</strong>
+            <span id="todayLabel"></span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="flex items-center gap-3">
-      <div class="text-right hidden sm:block">
-        <p class="text-xs text-gray-400" id="todayLabel"></p>
-      </div>
-      <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">L</div>
-    </div>
+
+    <nav class="topnav">
+      <button class="menu-link active active-nav-item" data-view="dashboard">Painel</button>
+      <button class="menu-link" data-view="brothers">Irm&atilde;os</button>
+      <button class="menu-link" data-view="sessions">Sess&otilde;es</button>
+      <button class="menu-link" data-view="reports">Relat&oacute;rios</button>
+      <button class="menu-link" data-view="calendar">Calend&aacute;rio</button>
+    </nav>
   </header>
 
-  <main class="p-4 space-y-6 max-w-7xl mx-auto">
+  <main class="main-shell">
+    <section class="lodge-banner">
+      <p class="page-breadcrumb">PAINEL / HOME</p>
+      <h2 class="lodge-name">A.'.R.'.G.'.E.'.D.'.P.'.M.'.L.'.S.'. F&eacute;, Esperan&ccedil;a e Caridade 100</h2>
+    </section>
+
+    <div class="content-wrap space-y-6 max-w-7xl mx-auto">
     <section id="dashboard" class="view active"></section>
     <section id="brothers" class="view"></section>
     <section id="sessions" class="view"></section>
     <section id="reports" class="view"></section>
     <section id="calendar" class="view"></section>
+    </div>
   </main>
-
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex items-center justify-around py-3 px-2 z-50">
-    <button class="nav-link active active-nav-item" data-view="dashboard">
-      <span class="nav-icon">P</span>
-      <span class="text-[10px] font-bold">Painel</span>
-    </button>
-    <button class="nav-link" data-view="brothers">
-      <span class="nav-icon">I</span>
-      <span class="text-[10px] font-medium">Irm&atilde;os</span>
-    </button>
-    <button class="nav-link" data-view="sessions">
-      <span class="nav-icon">S</span>
-      <span class="text-[10px] font-medium">Sess&otilde;es</span>
-    </button>
-    <button class="nav-link" data-view="reports">
-      <span class="nav-icon">R</span>
-      <span class="text-[10px] font-medium">Relat&oacute;rios</span>
-    </button>
-    <button class="nav-link" data-view="calendar">
-      <span class="nav-icon">C</span>
-      <span class="text-[10px] font-medium">Calend&aacute;rio</span>
-    </button>
-  </nav>
 
   <template id="dashboardTemplate">
     <section class="bg-gradient-to-br from-primary to-[#a30000] rounded-custom p-6 text-white shadow-lg shadow-red-900/10">
