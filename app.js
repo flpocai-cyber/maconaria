@@ -1,4 +1,3 @@
-
 const SESSION_LEVELS = [
   { value: "aprendiz", label: "Aprendiz" },
   { value: "companheiro", label: "Companheiro" },
@@ -15,11 +14,11 @@ const REPORT_FIELDS = [
   { key: "name", label: "Nome" },
   { key: "degree", label: "Grau" },
   { key: "cim", label: "CIM" },
-  { key: "address", label: "Endereço" },
+  { key: "address", label: "Endere\u00e7o" },
   { key: "phone", label: "Telefone" },
   { key: "wife", label: "Esposa" },
-  { key: "emeritoDate", label: "Emérito" },
-  { key: "benemeritoDate", label: "Benemérito" }
+  { key: "emeritoDate", label: "Em\u00e9rito" },
+  { key: "benemeritoDate", label: "Benem\u00e9rito" }
 ];
 
 const PIE_COLORS = {
@@ -77,9 +76,7 @@ async function api(path, options = {}) {
   });
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    throw new Error(data?.error || "Erro ao salvar dados.");
-  }
+  if (!response.ok) throw new Error(data?.error || "Erro ao salvar dados.");
   return data;
 }
 
@@ -88,9 +85,7 @@ async function loadState() {
   sortSessions();
 }
 
-function showMessage(message) {
-  window.alert(message);
-}
+function showMessage(message) { window.alert(message); }
 
 function buildBirthdayEvent(name, type, dateString, year, today) {
   const source = new Date(`${dateString}T00:00`);
@@ -106,7 +101,7 @@ function collectBirthdayEvents() {
   const year = now.getFullYear();
   const events = [];
   state.brothers.forEach((brother) => {
-    if (brother.birthDate) events.push(buildBirthdayEvent(brother.name, "Irmão do quadro", brother.birthDate, year, today));
+    if (brother.birthDate) events.push(buildBirthdayEvent(brother.name, "Irm\u00e3o do quadro", brother.birthDate, year, today));
     if (brother.wifeName && brother.wifeBirthDate) events.push(buildBirthdayEvent(brother.wifeName, `Esposa de ${brother.name}`, brother.wifeBirthDate, year, today));
   });
   return events.filter(Boolean).sort((a, b) => a.sortKey - b.sortKey);
@@ -132,7 +127,7 @@ function renderPieChart(element, legendElement, items) {
   const total = items.reduce((sum, item) => sum + item.value, 0);
   if (!total) {
     element.style.background = "conic-gradient(#dfe7f1 0deg 360deg)";
-    legendElement.innerHTML = '<div class="empty-state">Sem dados suficientes para o gráfico.</div>';
+    legendElement.innerHTML = '<div class="empty-state">Sem dados suficientes para o gr\u00e1fico.</div>';
     return;
   }
   let current = 0;
@@ -163,19 +158,19 @@ function renderDashboard() {
   qs("#brothersCount").textContent = state.brothers.length;
   qs("#sessionsCount").textContent = state.sessions.length;
   qs("#visitorsCount").textContent = state.sessions.reduce((sum, session) => sum + session.visitors.length, 0);
-  qs("#dashboardGreeting").textContent = `Frequência geral de ${calculateGlobalAttendanceRate()}%`;
-  qs("#dashboardSubtitle").textContent = "Resumo de sessões, visitantes e aniversários do quadro.";
+  qs("#dashboardGreeting").textContent = `Frequ\u00eancia geral de ${calculateGlobalAttendanceRate()}%`;
+  qs("#dashboardSubtitle").textContent = "Resumo de sess\u00f5es, visitantes e anivers\u00e1rios do quadro.";
 
   const totals = { aprendiz: 0, companheiro: 0, mestre: 0 };
   state.sessions.forEach((session) => { totals[session.degree] += 1; });
   renderPieChart(qs("#dashboardPie"), qs("#dashboardLegend"), [
-    { label: "Sessões de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
-    { label: "Sessões de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
-    { label: "Sessões de Mestre", value: totals.mestre, color: PIE_COLORS.mestre }
+    { label: "Sess\u00f5es de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
+    { label: "Sess\u00f5es de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
+    { label: "Sess\u00f5es de Mestre", value: totals.mestre, color: PIE_COLORS.mestre }
   ]);
 
   const upcoming = collectBirthdayEvents().slice(0, 6);
-  qs("#birthdayHighlights").innerHTML = upcoming.length ? upcoming.map((item) => `<div class="birthday-row"><div><strong>${escapeHtml(item.name)}</strong><div class="muted">${escapeHtml(item.type)}</div></div><strong>${item.dateLabel}</strong></div>`).join("") : '<div class="empty-state">Nenhum aniversário cadastrado.</div>';
+  qs("#birthdayHighlights").innerHTML = upcoming.length ? upcoming.map((item) => `<div class="birthday-row"><div><strong>${escapeHtml(item.name)}</strong><div class="muted">${escapeHtml(item.type)}</div></div><strong>${item.dateLabel}</strong></div>`).join("") : '<div class="empty-state">Nenhum anivers\u00e1rio cadastrado.</div>';
   renderBirthdayCalendar(qs("#dashboardCalendar"), 4);
 }
 function renderBrothers() {
@@ -190,22 +185,22 @@ function buildBrotherForm(editId = "") {
   qs("#brotherForm").innerHTML = `
     ${textField("name", "Nome", brother.name, true)}
     ${textField("cim", "CIM", brother.cim, true)}
-    ${textField("address", "Endereço", brother.address, true, "field-wide")}
+    ${textField("address", "Endere\u00e7o", brother.address, true, "field-wide")}
     ${textField("phone", "Telefone", brother.phone, true)}
     ${dateField("birthDate", "Data de nascimento", brother.birthDate, true)}
     ${selectField("degree", "Grau", SESSION_LEVELS, brother.degree || "aprendiz", true)}
-    ${dateField("initiationDate", "Data de Iniciação", brother.initiationDate)}
-    ${dateField("elevationDate", "Data de Elevação", brother.elevationDate)}
-    ${dateField("exaltationDate", "Data de Exaltação", brother.exaltationDate)}
-    ${dateField("emeritoDate", "Data de Emérito", brother.emeritoDate)}
-    ${dateField("benemeritoDate", "Data de Benemérito", brother.benemeritoDate)}
+    ${dateField("initiationDate", "Data de Inicia\u00e7\u00e3o", brother.initiationDate)}
+    ${dateField("elevationDate", "Data de Eleva\u00e7\u00e3o", brother.elevationDate)}
+    ${dateField("exaltationDate", "Data de Exalta\u00e7\u00e3o", brother.exaltationDate)}
+    ${dateField("emeritoDate", "Data de Em\u00e9rito", brother.emeritoDate)}
+    ${dateField("benemeritoDate", "Data de Benem\u00e9rito", brother.benemeritoDate)}
     <div class="field-wide"><label>Esposa</label></div>
     ${textField("wifeName", "Nome da esposa", brother.wifeName)}
-    ${dateField("wifeBirthDate", "Aniversário da esposa", brother.wifeBirthDate)}
+    ${dateField("wifeBirthDate", "Anivers\u00e1rio da esposa", brother.wifeBirthDate)}
     ${textField("wifePhone", "Telefone da esposa", brother.wifePhone)}
     <input type="hidden" name="id" value="${escapeHtml(editId)}">
     <div class="form-actions">
-      <button type="submit" class="btn">${editId ? "Salvar alterações" : "Cadastrar irmão"}</button>
+      <button type="submit" class="btn">${editId ? "Salvar altera\u00e7\u00f5es" : "Cadastrar irm\u00e3o"}</button>
       <button type="button" class="btn-secondary" id="resetBrotherForm">Limpar</button>
     </div>
   `;
@@ -249,7 +244,7 @@ function buildBrothersTable(searchTerm) {
   qs("#brothersTable").innerHTML = brothers.length ? `
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>Esposa</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>Esposa</th><th>A\u00e7\u00f5es</th></tr></thead>
         <tbody>
           ${brothers.map((brother) => `
             <tr>
@@ -263,7 +258,7 @@ function buildBrothersTable(searchTerm) {
         </tbody>
       </table>
     </div>
-  ` : '<div class="empty-state">Nenhum irmão encontrado.</div>';
+  ` : '<div class="empty-state">Nenhum irm\u00e3o encontrado.</div>';
 
   qsa("[data-edit-brother]").forEach((button) => { button.onclick = () => buildBrotherForm(button.dataset.editBrother); });
   qsa("[data-delete-brother]").forEach((button) => {
@@ -293,17 +288,17 @@ function buildSessionForm(editId = "", draft = null) {
 
   qs("#sessionForm").innerHTML = `
     ${datetimeField("datetime", "Data e hora", session.datetime, true)}
-    ${selectField("degree", "Grau da sessão", SESSION_LEVELS, session.degree, true)}
+    ${selectField("degree", "Grau da sess\u00e3o", SESSION_LEVELS, session.degree, true)}
     ${textField("theme", "Tema", session.theme, true)}
-    ${textareaField("notes", "Observações", session.notes, "field-wide")}
-    <div class="field-wide"><label>Irmãos aptos para presença</label><div class="attendees-panel"><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} • CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irmão apto para este grau.</div>'}</div></div></div>
+    ${textareaField("notes", "Observa\u00e7\u00f5es", session.notes, "field-wide")}
+    <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
     <div class="field-wide"><label>Visitantes</label><div class="visitors-panel"><div id="visitorsEditor"></div><div class="visitor-form-inline"><input id="visitorName" placeholder="Nome do visitante"><input id="visitorLodge" placeholder="A.R.L.S."><input id="visitorCity" placeholder="Cidade"><button type="button" class="btn-secondary" id="addVisitorBtn">Adicionar visitante</button></div></div></div>
     <input type="hidden" name="id" value="${escapeHtml(editId)}">
-    <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sessão" : "Cadastrar sessão"}</button><button type="button" class="btn-secondary" id="resetSessionForm">Limpar</button></div>
+    <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sess\u00e3o" : "Cadastrar sess\u00e3o"}</button><button type="button" class="btn-secondary" id="resetSessionForm">Limpar</button></div>
   `;
 
   function renderVisitorsEditor() {
-    qs("#visitorsEditor").innerHTML = visitors.length ? `<div class="visitor-grid">${visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} • ${escapeHtml(visitor.city || "-")}</div></div><button type="button" class="btn-secondary" data-remove-visitor="${visitor.id}">Remover</button></div>`).join("")}</div>` : '<div class="empty-state">Nenhum visitante lançado nesta sessão.</div>';
+    qs("#visitorsEditor").innerHTML = visitors.length ? `<div class="visitor-grid">${visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div><button type="button" class="btn-secondary" data-remove-visitor="${visitor.id}">Remover</button></div>`).join("")}</div>` : '<div class="empty-state">Nenhum visitante lan\u00e7ado nesta sess\u00e3o.</div>';
     qsa("[data-remove-visitor]", qs("#visitorsEditor")).forEach((button) => {
       button.onclick = () => {
         visitors = visitors.filter((item) => item.id !== button.dataset.removeVisitor);
@@ -357,7 +352,7 @@ function buildSessionForm(editId = "", draft = null) {
 function buildSessionsList(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
   const sessions = state.sessions.filter((session) => [session.theme, session.notes, getDegreeLabel(session.degree)].some((value) => String(value).toLowerCase().includes(term)));
-  qs("#sessionsList").innerHTML = sessions.length ? `<div class="session-stack">${sessions.map((session) => `<div class="session-card"><div class="session-top"><div><strong>${escapeHtml(session.theme)}</strong><div class="muted">${formatDate(session.datetime, true)} • Grau ${escapeHtml(getDegreeLabel(session.degree))}</div></div><div class="checkbox-list"><span class="badge ${session.degree}">${escapeHtml(getDegreeLabel(session.degree))}</span><button class="btn-secondary" data-edit-session="${session.id}">Editar</button><button class="btn-secondary" data-delete-session="${session.id}">Excluir</button></div></div><div class="muted" style="margin-bottom:16px;">${escapeHtml(session.notes || "Sem observações.")}</div><div class="session-details"><div class="attendees-panel"><strong>Presenças</strong><div class="attendee-grid">${getEligibleBrothers(session.degree).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irmãos aptos nesta sessão.</div>'}</div></div><div class="visitors-panel"><strong>Visitantes</strong><div class="visitor-grid">${session.visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} • ${escapeHtml(visitor.city || "-")}</div></div></div>`).join("") || '<div class="empty-state">Nenhum visitante lançado.</div>'}</div></div></div></div>`).join("")}</div>` : '<div class="empty-state">Nenhuma sessão encontrada.</div>';
+  qs("#sessionsList").innerHTML = sessions.length ? `<div class="session-stack">${sessions.map((session) => `<div class="session-card"><div class="session-top"><div><strong>${escapeHtml(session.theme)}</strong><div class="muted">${formatDate(session.datetime, true)} \u2022 Grau ${escapeHtml(getDegreeLabel(session.degree))}</div></div><div class="checkbox-list"><span class="badge ${session.degree}">${escapeHtml(getDegreeLabel(session.degree))}</span><button class="btn-secondary" data-edit-session="${session.id}">Editar</button><button class="btn-secondary" data-delete-session="${session.id}">Excluir</button></div></div><div class="muted" style="margin-bottom:16px;">${escapeHtml(session.notes || "Sem observa\u00e7\u00f5es.")}</div><div class="session-details"><div class="attendees-panel"><strong>Presen\u00e7as</strong><div class="attendee-grid">${getEligibleBrothers(session.degree).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irm\u00e3os aptos nesta sess\u00e3o.</div>'}</div></div><div class="visitors-panel"><strong>Visitantes</strong><div class="visitor-grid">${session.visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div></div>`).join("") || '<div class="empty-state">Nenhum visitante lan\u00e7ado.</div>'}</div></div></div></div>`).join("")}</div>` : '<div class="empty-state">Nenhuma sess\u00e3o encontrada.</div>';
 
   qsa("[data-edit-session]").forEach((button) => { button.onclick = () => buildSessionForm(button.dataset.editSession); });
   qsa("[data-delete-session]").forEach((button) => {
@@ -406,7 +401,7 @@ function buildBrothersReport() {
 }
 
 function buildAttendanceReport() {
-  qs("#attendanceReportControls").innerHTML = `<div class="report-filters"><select id="attendanceRange"><option value="1">Último mês</option><option value="2">Últimos 2 meses</option><option value="3" selected>Últimos 3 meses</option><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select></div>`;
+  qs("#attendanceReportControls").innerHTML = `<div class="report-filters"><select id="attendanceRange"><option value="1">\u00daltimo m\u00eas</option><option value="2">\u00daltimos 2 meses</option><option value="3" selected>\u00daltimos 3 meses</option><option value="6">\u00daltimos 6 meses</option><option value="12">\u00daltimos 12 meses</option></select></div>`;
   const renderAttendance = () => {
     const sessions = getPeriodSessions(Number(qs("#attendanceRange").value));
     const totals = { aprendiz: 0, companheiro: 0, mestre: 0, faltas: 0 };
@@ -417,17 +412,17 @@ function buildAttendanceReport() {
       });
     });
     renderPieChart(qs("#attendancePie"), qs("#attendanceLegend"), [
-      { label: "Sessões de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
-      { label: "Sessões de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
-      { label: "Sessões de Mestre", value: totals.mestre, color: PIE_COLORS.mestre },
+      { label: "Sess\u00f5es de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
+      { label: "Sess\u00f5es de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
+      { label: "Sess\u00f5es de Mestre", value: totals.mestre, color: PIE_COLORS.mestre },
       { label: "Faltas", value: totals.faltas, color: PIE_COLORS.faltas }
     ]);
-    qs("#attendanceReportTable").innerHTML = state.brothers.length ? `<div class="table-wrap"><table><thead><tr><th>Irmão</th><th>CIM</th><th>Grau</th><th>Presenças</th><th>Sessões possíveis</th><th>Percentual</th></tr></thead><tbody>${state.brothers.map((brother) => {
+    qs("#attendanceReportTable").innerHTML = state.brothers.length ? `<div class="table-wrap"><table><thead><tr><th>Irm\u00e3o</th><th>CIM</th><th>Grau</th><th>Presen\u00e7as</th><th>Sess\u00f5es poss\u00edveis</th><th>Percentual</th></tr></thead><tbody>${state.brothers.map((brother) => {
       const possible = sessions.filter((session) => canAttendSession(brother.degree, session.degree)).length;
       const present = sessions.filter((session) => session.attendance.includes(brother.id)).length;
       const rate = possible ? Math.round((present / possible) * 100) : 0;
       return `<tr><td>${escapeHtml(brother.name)}</td><td>${escapeHtml(brother.cim)}</td><td>${escapeHtml(getDegreeLabel(brother.degree))}</td><td>${present}</td><td>${possible}</td><td>${rate}%</td></tr>`;
-    }).join("")}</tbody></table></div>` : '<div class="empty-state">Cadastre irmãos e sessões para visualizar o relatório.</div>';
+    }).join("")}</tbody></table></div>` : '<div class="empty-state">Cadastre irm\u00e3os e sess\u00f5es para visualizar o relat\u00f3rio.</div>';
   };
   qs("#attendanceRange").onchange = renderAttendance;
   renderAttendance();
@@ -449,7 +444,7 @@ function buildVisitorsReport() {
       });
     });
     const rows = Object.values(grouped).sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name));
-    qs("#visitorsReportTable").innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Visitante</th><th>A.R.L.S.</th><th>Cidade</th><th>Frequência</th></tr></thead><tbody>${rows.map((visitor) => `<tr><td>${escapeHtml(visitor.name)}</td><td>${escapeHtml(visitor.lodge || "A.R.L.S.")}</td><td>${escapeHtml(visitor.city || "-")}</td><td>${visitor.visits}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty-state">Nenhum visitante encontrado com os filtros selecionados.</div>';
+    qs("#visitorsReportTable").innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Visitante</th><th>A.R.L.S.</th><th>Cidade</th><th>Frequ\u00eancia</th></tr></thead><tbody>${rows.map((visitor) => `<tr><td>${escapeHtml(visitor.name)}</td><td>${escapeHtml(visitor.lodge || "A.R.L.S.")}</td><td>${escapeHtml(visitor.city || "-")}</td><td>${visitor.visits}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty-state">Nenhum visitante encontrado com os filtros selecionados.</div>';
   };
   qs("#visitorCityFilter").oninput = renderVisitors;
   qs("#visitorLodgeFilter").oninput = renderVisitors;
@@ -462,7 +457,7 @@ function renderBirthdayCalendar(container, monthsToShow) {
   const months = Array.from({ length: monthsToShow }, (_, index) => new Date(now.getFullYear(), now.getMonth() + index, 1));
   container.innerHTML = `<div class="calendar-grid">${months.map((date) => {
     const monthEvents = events.filter((event) => event.yearReference === date.getFullYear() && event.month === date.getMonth());
-    return `<div class="calendar-month"><h4>${escapeHtml(capitalize(monthLabel(date)))}</h4><div class="calendar-days">${monthEvents.length ? monthEvents.map((event) => `<div class="calendar-row"><div><strong>${escapeHtml(event.name)}</strong><div class="muted">${escapeHtml(event.type)}</div></div><strong>${event.day}</strong></div>`).join("") : '<div class="empty-state">Sem aniversários neste mês.</div>'}</div></div>`;
+    return `<div class="calendar-month"><h4>${escapeHtml(capitalize(monthLabel(date)))}</h4><div class="calendar-days">${monthEvents.length ? monthEvents.map((event) => `<div class="calendar-row"><div><strong>${escapeHtml(event.name)}</strong><div class="muted">${escapeHtml(event.type)}</div></div><strong>${event.day}</strong></div>`).join("") : '<div class="empty-state">Sem anivers\u00e1rios neste m\u00eas.</div>'}</div></div>`;
   }).join("")}</div>`;
 }
 
