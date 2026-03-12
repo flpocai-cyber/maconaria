@@ -145,9 +145,13 @@ function renderShell() {
   qs("#todayLabel").textContent = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }).format(new Date());
   qsa(".nav-link").forEach((button) => {
     button.onclick = () => {
-      qsa(".nav-link").forEach((item) => item.classList.remove("active"));
+      qsa(".nav-link").forEach((item) => {
+        item.classList.remove("active");
+        item.classList.remove("active-nav-item");
+      });
       qsa(".view").forEach((view) => view.classList.remove("active"));
       button.classList.add("active");
+      button.classList.add("active-nav-item");
       qs(`#${button.dataset.view}`).classList.add("active");
     };
   });
@@ -163,6 +167,7 @@ function renderDashboard() {
 
   const totals = { aprendiz: 0, companheiro: 0, mestre: 0 };
   state.sessions.forEach((session) => { totals[session.degree] += 1; });
+  qs("#dashboardPieTotal").textContent = state.sessions.length;
   renderPieChart(qs("#dashboardPie"), qs("#dashboardLegend"), [
     { label: "Sess\u00f5es de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
     { label: "Sess\u00f5es de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
