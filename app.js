@@ -12,8 +12,11 @@ const BROTHER_LEVELS = {
 
 const REPORT_FIELDS = [
   { key: "name", label: "Nome" },
+  { key: "treatmentName", label: "Tratamento" },
   { key: "degree", label: "Grau" },
   { key: "cim", label: "CIM" },
+  { key: "cpf", label: "CPF" },
+  { key: "email", label: "E-mail" },
   { key: "address", label: "Endere\u00e7o" },
   { key: "phone", label: "Telefone" },
   { key: "wife", label: "Esposa" },
@@ -224,7 +227,10 @@ function buildBrotherForm(editId = "") {
   const brother = state.brothers.find((item) => item.id === editId) || {};
   qs("#brotherForm").innerHTML = `
     ${textField("name", "Nome", brother.name, true)}
+    ${textField("treatmentName", "Nome de tratamento", brother.treatmentName)}
     ${textField("cim", "CIM", brother.cim, true)}
+    ${textField("cpf", "CPF", brother.cpf)}
+    ${textField("email", "E-mail", brother.email)}
     ${textField("address", "Endere\u00e7o", brother.address, true, "field-wide")}
     ${textField("phone", "Telefone", brother.phone, true)}
     ${dateField("birthDate", "Data de nascimento", brother.birthDate, true)}
@@ -250,10 +256,13 @@ function buildBrotherForm(editId = "") {
     const formData = Object.fromEntries(new FormData(event.currentTarget).entries());
     const payload = {
       name: formData.name.trim(),
+      treatmentName: formData.treatmentName.trim(),
       address: formData.address.trim(),
       phone: formData.phone.trim(),
       birthDate: formData.birthDate,
       cim: formData.cim.trim(),
+      cpf: formData.cpf.trim(),
+      email: formData.email.trim(),
       degree: formData.degree,
       initiationDate: formData.initiationDate,
       elevationDate: formData.elevationDate,
@@ -280,17 +289,19 @@ function buildBrotherForm(editId = "") {
 
 function buildBrothersTable(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
-  const brothers = state.brothers.filter((brother) => [brother.name, brother.cim, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term)));
+  const brothers = state.brothers.filter((brother) => [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term)));
   qs("#brothersTable").innerHTML = brothers.length ? `
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>Esposa</th><th>A\u00e7\u00f5es</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>CPF</th><th>Contato</th><th>Esposa</th><th>A\u00e7\u00f5es</th></tr></thead>
         <tbody>
           ${brothers.map((brother) => `
             <tr>
-              <td><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(brother.phone || "-")}</div></td>
+              <td><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(brother.treatmentName || "-")}</div></td>
               <td><span class="badge ${brother.degree}">${escapeHtml(getDegreeLabel(brother.degree))}</span></td>
               <td>${escapeHtml(brother.cim)}</td>
+              <td>${escapeHtml(brother.cpf || "-")}</td>
+              <td><div>${escapeHtml(brother.phone || "-")}</div><div class="muted">${escapeHtml(brother.email || "-")}</div></td>
               <td>${escapeHtml(brother.wifeName || "-")}</td>
               <td><button class="btn-secondary" data-edit-brother="${brother.id}">Editar</button> <button class="btn-secondary" data-delete-brother="${brother.id}">Excluir</button></td>
             </tr>
@@ -495,8 +506,11 @@ function buildSessionsList(searchTerm) {
 function resolveBrotherField(brother, key) {
   const map = {
     name: brother.name,
+    treatmentName: brother.treatmentName || "-",
     degree: getDegreeLabel(brother.degree),
     cim: brother.cim,
+    cpf: brother.cpf || "-",
+    email: brother.email || "-",
     address: brother.address || "-",
     phone: brother.phone || "-",
     wife: brother.wifeName ? `${brother.wifeName}${brother.wifePhone ? ` (${brother.wifePhone})` : ""}` : "-",
