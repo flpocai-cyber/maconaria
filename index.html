@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel da Loja - Controle de Presença</title>
+  <title>Painel da Loja - Controle de Presen&ccedil;a</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,15 +16,15 @@
         <div class="brand-mark">A</div>
         <div>
           <strong>Painel da Loja</strong>
-          <span>Controle de presença</span>
+          <span>Controle de presen&ccedil;a</span>
         </div>
       </div>
       <nav class="nav-menu">
         <button class="nav-link active" data-view="dashboard">Painel</button>
-        <button class="nav-link" data-view="brothers">Irmãos do quadro</button>
-        <button class="nav-link" data-view="sessions">Sessões</button>
-        <button class="nav-link" data-view="reports">Relatórios</button>
-        <button class="nav-link" data-view="calendar">Calendário</button>
+        <button class="nav-link" data-view="brothers">Irm&atilde;os do quadro</button>
+        <button class="nav-link" data-view="sessions">Sess&otilde;es</button>
+        <button class="nav-link" data-view="reports">Relat&oacute;rios</button>
+        <button class="nav-link" data-view="calendar">Calend&aacute;rio</button>
       </nav>
     </aside>
 
@@ -32,7 +32,7 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">A.R.L.S.</p>
-          <h1>Sistema de Presença da Loja</h1>
+          <h1>Sistema de Presen&ccedil;a da Loja</h1>
         </div>
         <div class="topbar-meta">
           <span id="todayLabel"></span>
@@ -51,31 +51,31 @@
     <div class="dashboard-grid">
       <article class="hero-card">
         <div>
-          <p class="eyebrow">Visão geral</p>
+          <p class="eyebrow">Vis&atilde;o geral</p>
           <h2 id="dashboardGreeting">Bem-vindo</h2>
-          <p id="dashboardSubtitle">Acompanhe sessões, presenças e aniversários em um só lugar.</p>
+          <p id="dashboardSubtitle">Acompanhe sess&otilde;es, presen&ccedil;as e anivers&aacute;rios em um s&oacute; lugar.</p>
         </div>
       </article>
       <article class="metric-card">
-        <span class="metric-label">Irmãos do quadro</span>
+        <span class="metric-label">Irm&atilde;os do quadro</span>
         <strong id="brothersCount">0</strong>
         <small>cadastros ativos</small>
       </article>
       <article class="metric-card">
-        <span class="metric-label">Sessões</span>
+        <span class="metric-label">Sess&otilde;es</span>
         <strong id="sessionsCount">0</strong>
         <small>registradas</small>
       </article>
       <article class="metric-card">
         <span class="metric-label">Visitantes</span>
         <strong id="visitorsCount">0</strong>
-        <small>lançados nas sessões</small>
+        <small>lan&ccedil;ados nas sess&otilde;es</small>
       </article>
       <article class="panel-card chart-panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Frequência geral</p>
-            <h3>Distribuição das sessões</h3>
+            <p class="eyebrow">Frequ&ecirc;ncia geral</p>
+            <h3>Distribui&ccedil;&atilde;o das sess&otilde;es</h3>
           </div>
         </div>
         <div class="pie-layout">
@@ -86,8 +86,8 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Aniversários</p>
-            <h3>Próximas datas</h3>
+            <p class="eyebrow">Anivers&aacute;rios</p>
+            <h3>Pr&oacute;ximas datas</h3>
           </div>
         </div>
         <div id="birthdayHighlights" class="stack-list"></div>
@@ -95,8 +95,8 @@
       <article class="panel-card span-2">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Calendário</p>
-            <h3>Agenda de aniversários</h3>
+            <p class="eyebrow">Calend&aacute;rio</p>
+            <h3>Agenda de anivers&aacute;rios</h3>
           </div>
         </div>
         <div id="dashboardCalendar"></div>
@@ -110,7 +110,7 @@
         <div class="panel-header">
           <div>
             <p class="eyebrow">Cadastro</p>
-            <h2>Irmão do quadro</h2>
+            <h2>Irm&atilde;o do quadro</h2>
           </div>
         </div>
         <form id="brotherForm" class="form-grid"></form>
@@ -119,7 +119,7 @@
         <div class="panel-header">
           <div>
             <p class="eyebrow">Quadro da loja</p>
-            <h2>Irmãos cadastrados</h2>
+            <h2>Irm&atilde;os cadastrados</h2>
           </div>
           <input id="brotherSearch" class="search-input" type="search" placeholder="Pesquisar por nome, CIM ou grau">
         </div>
@@ -133,8 +133,8 @@
       <article class="panel-card form-panel">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Sessão</p>
-            <h2>Nova sessão</h2>
+            <p class="eyebrow">Sess&atilde;o</p>
+            <h2>Nova sess&atilde;o</h2>
           </div>
         </div>
         <form id="sessionForm" class="form-grid"></form>
@@ -142,10 +142,10 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Sessões cadastradas</p>
-            <h2>Livro de presença</h2>
+            <p class="eyebrow">Sess&otilde;es cadastradas</p>
+            <h2>Livro de presen&ccedil;a</h2>
           </div>
-          <input id="sessionSearch" class="search-input" type="search" placeholder="Pesquisar por tema ou observação">
+          <input id="sessionSearch" class="search-input" type="search" placeholder="Pesquisar por tema ou observa&ccedil;&atilde;o">
         </div>
         <div id="sessionsList"></div>
       </article>
@@ -157,8 +157,8 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Relatório</p>
-            <h2>Irmãos do quadro</h2>
+            <p class="eyebrow">Relat&oacute;rio</p>
+            <h2>Irm&atilde;os do quadro</h2>
           </div>
         </div>
         <div id="brothersReportControls"></div>
@@ -167,8 +167,8 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Relatório</p>
-            <h2>Presenças por período</h2>
+            <p class="eyebrow">Relat&oacute;rio</p>
+            <h2>Presen&ccedil;as por per&iacute;odo</h2>
           </div>
         </div>
         <div id="attendanceReportControls"></div>
@@ -181,7 +181,7 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Relatório</p>
+            <p class="eyebrow">Relat&oacute;rio</p>
             <h2>Visitantes frequentes</h2>
           </div>
         </div>
@@ -196,8 +196,8 @@
       <article class="panel-card span-2">
         <div class="panel-header">
           <div>
-            <p class="eyebrow">Calendário</p>
-            <h2>Aniversários de irmãos e esposas</h2>
+            <p class="eyebrow">Calend&aacute;rio</p>
+            <h2>Anivers&aacute;rios de irm&atilde;os e esposas</h2>
           </div>
         </div>
         <div id="calendarContent"></div>
