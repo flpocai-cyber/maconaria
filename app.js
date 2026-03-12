@@ -52,6 +52,41 @@ function escapeHtml(value) {
 }
 function monthLabel(date) { return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date); }
 function capitalize(value) { return value ? value.charAt(0).toUpperCase() + value.slice(1) : ""; }
+function normalizeBrokenText(value) {
+  const source = String(value || "");
+  const replacements = [
+    ["Sess?o", "Sessão"],
+    ["Ordin?ria", "Ordinária"],
+    ["1? INSTRU??O", "1ª INSTRUÇÃO"],
+    ["?ltima", "Última"],
+    ["Apresenta??o", "Apresentação"],
+    ["Gr?o", "Grão"],
+    ["Jos?", "José"],
+    ["F?bio", "Fábio"],
+    ["Cons?rcio", "Consórcio"],
+    ["Elei??o", "Eleição"],
+    ["Eleva??o", "Elevação"],
+    ["Escrut?nio", "Escrutínio"],
+    ["Exalta??o", "Exaltação"],
+    ["Inicia??o", "Iniciação"],
+    ["Instala??o", "Instalação"],
+    ["Jantar Ritual?stico", "Jantar Ritualístico"],
+    ["M?rcio", "Márcio"],
+    ["Semin?rio", "Seminário"],
+    ["Sal?rio", "Salário"],
+    ["L?o", "Léo"],
+    ["?caro", "Ícaro"],
+    ["Esperan?a", "Esperança"],
+    ["M?rio", "Mário"],
+    ["Cansa?o", "Cansaço"],
+    ["D? Bola", "Dó Bola"],
+    ["Palet?ica", "Paletóica"],
+    ["Vota??o M?tua", "Votação Mútua"],
+    ["M?tua", "Mútua"],
+    ["Cl?vis", "Clóvis"]
+  ];
+  return replacements.reduce((text, [from, to]) => text.replaceAll(from, to), source);
+}
 
 function textField(name, label, value = "", required = false, className = "field") {
   return `<div class="${className}"><label for="${name}">${label}</label><input id="${name}" name="${name}" value="${escapeHtml(value)}" ${required ? "required" : ""}></div>`;
@@ -302,8 +337,8 @@ function buildSessionForm(editId = "", draft = null) {
   qs("#sessionForm").innerHTML = `
     ${datetimeField("datetime", "Data e hora", session.datetime, true)}
     ${selectField("degree", "Grau da sess\u00e3o", SESSION_LEVELS, session.degree, true)}
-    ${textField("theme", "Tema", session.theme, true)}
-    ${textareaField("notes", "Observa\u00e7\u00f5es", session.notes, "field-wide")}
+    ${textField("theme", "Tema", normalizeBrokenText(session.theme), true)}
+    ${textareaField("notes", "Observa\u00e7\u00f5es", normalizeBrokenText(session.notes), "field-wide")}
     <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
     <div class="field-wide"><label>Visitantes</label><div class="visitors-panel"><div id="visitorsEditor"></div><div class="visitor-form-inline"><input id="visitorName" placeholder="Nome do visitante"><input id="visitorLodge" placeholder="A.R.L.S."><input id="visitorCity" placeholder="Cidade"><button type="button" class="btn-secondary" id="addVisitorBtn">Adicionar visitante</button></div></div></div>
     <input type="hidden" name="id" value="${escapeHtml(editId)}">
@@ -392,8 +427,8 @@ function buildSessionsList(searchTerm) {
             <tr>
               <td class="sessions-date-cell">${formatDate(session.datetime)}</td>
               <td>
-                <div class="sessions-title-main">${escapeHtml(session.theme)}</div>
-                <div class="sessions-title-sub">${escapeHtml(session.notes || "Sem observa\u00e7\u00f5es.")}</div>
+                <div class="sessions-title-main">${escapeHtml(normalizeBrokenText(session.theme))}</div>
+                <div class="sessions-title-sub">${escapeHtml(normalizeBrokenText(session.notes || "Sem observa\u00e7\u00f5es."))}</div>
                 <div class="sessions-title-meta">${new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(session.datetime))} - ${escapeHtml(getDegreeLabel(session.degree))}</div>
               </td>
               <td class="sessions-numeric-cell">${session.attendance.length}</td>

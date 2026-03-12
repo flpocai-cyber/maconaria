@@ -377,8 +377,10 @@ tr:last-child td {
 
 .session-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.45rem;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .table-action-btn {
@@ -390,6 +392,7 @@ tr:last-child td {
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .table-action-btn:hover {
