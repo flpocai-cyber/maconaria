@@ -283,7 +283,15 @@ function renderSessions() {
   qs("#sessions").innerHTML = qs("#sessionsTemplate").innerHTML;
   buildSessionForm();
   buildSessionsList("");
-  qs("#sessionSearch").addEventListener("input", (event) => buildSessionsList(event.target.value));
+  const renderFilteredSessions = () => buildSessionsList(qs("#sessionSearch").value);
+  qs("#sessionSearch").addEventListener("input", renderFilteredSessions);
+  qs("#sessionDateFrom").addEventListener("change", renderFilteredSessions);
+  qs("#sessionDateTo").addEventListener("change", renderFilteredSessions);
+  qs("#sessionFilterBtn").onclick = renderFilteredSessions;
+  qs("#openSessionFormBtn").onclick = () => {
+    buildSessionForm();
+    qs("#sessionFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 }
 
 function buildSessionForm(editId = "", draft = null) {
@@ -356,10 +364,86 @@ function buildSessionForm(editId = "", draft = null) {
 }
 function buildSessionsList(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
-  const sessions = state.sessions.filter((session) => [session.theme, session.notes, getDegreeLabel(session.degree)].some((value) => String(value).toLowerCase().includes(term)));
-  qs("#sessionsList").innerHTML = sessions.length ? `<div class="session-stack">${sessions.map((session) => `<div class="session-card"><div class="session-top"><div><strong>${escapeHtml(session.theme)}</strong><div class="muted">${formatDate(session.datetime, true)} \u2022 Grau ${escapeHtml(getDegreeLabel(session.degree))}</div></div><div class="checkbox-list"><span class="badge ${session.degree}">${escapeHtml(getDegreeLabel(session.degree))}</span><button class="btn-secondary" data-edit-session="${session.id}">Editar</button><button class="btn-secondary" data-delete-session="${session.id}">Excluir</button></div></div><div class="muted" style="margin-bottom:16px;">${escapeHtml(session.notes || "Sem observa\u00e7\u00f5es.")}</div><div class="session-details"><div class="attendees-panel"><strong>Presen\u00e7as</strong><div class="attendee-grid">${getEligibleBrothers(session.degree).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irm\u00e3os aptos nesta sess\u00e3o.</div>'}</div></div><div class="visitors-panel"><strong>Visitantes</strong><div class="visitor-grid">${session.visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div></div>`).join("") || '<div class="empty-state">Nenhum visitante lan\u00e7ado.</div>'}</div></div></div></div>`).join("")}</div>` : '<div class="empty-state">Nenhuma sess\u00e3o encontrada.</div>';
+  const dateFrom = qs("#sessionDateFrom")?.value;
+  const dateTo = qs("#sessionDateTo")?.value;
+  const sessions = state.sessions.filter((session) => {
+    const matchesTerm = [session.theme, session.notes, getDegreeLabel(session.degree)].some((value) => String(value).toLowerCase().includes(term));
+    if (!matchesTerm) return false;
+    const sessionDate = session.datetime ? session.datetime.slice(0, 10) : "";
+    if (dateFrom && sessionDate < dateFrom) return false;
+    if (dateTo && sessionDate > dateTo) return false;
+    return true;
+  });
+  qs("#sessionsList").innerHTML = sessions.length ? `
+    <div class="table-wrap sessions-table-wrap">
+      <table class="sessions-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>T&iacute;tulo</th>
+            <th>Presen&ccedil;a</th>
+            <th>Visitantes</th>
+            <th>Grau</th>
+            <th>Op&ccedil;&otilde;es</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sessions.map((session) => `
+            <tr>
+              <td class="sessions-date-cell">${formatDate(session.datetime)}</td>
+              <td>
+                <div class="sessions-title-main">${escapeHtml(session.theme)}</div>
+                <div class="sessions-title-sub">${escapeHtml(session.notes || "Sem observa\u00e7\u00f5es.")}</div>
+                <div class="sessions-title-meta">${new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(session.datetime))} - ${escapeHtml(getDegreeLabel(session.degree))}</div>
+              </td>
+              <td class="sessions-numeric-cell">${session.attendance.length}</td>
+              <td class="sessions-numeric-cell">${session.visitors.length}</td>
+              <td><span class="badge ${session.degree}">${escapeHtml(getDegreeLabel(session.degree))}</span></td>
+              <td>
+                <div class="session-actions">
+                  <button class="table-action-btn" data-show-session="${session.id}">Detalhes</button>
+                  <button class="table-action-btn" data-edit-session="${session.id}">Editar</button>
+                  <button class="table-action-btn danger" data-delete-session="${session.id}">Excluir</button>
+                </div>
+              </td>
+            </tr>
+            <tr class="session-detail-row hidden" data-session-detail="${session.id}">
+              <td colspan="6">
+                <div class="session-inline-detail">
+                  <div class="attendees-panel">
+                    <strong>Presen&ccedil;as</strong>
+                    <div class="attendee-grid">
+                      ${getEligibleBrothers(session.degree).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irm\u00e3os aptos nesta sess\u00e3o.</div>'}
+                    </div>
+                  </div>
+                  <div class="visitors-panel">
+                    <strong>Visitantes</strong>
+                    <div class="visitor-grid">
+                      ${session.visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div></div>`).join("") || '<div class="empty-state">Nenhum visitante lan\u00e7ado.</div>'}
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  ` : '<div class="empty-state">Nenhuma sess\u00e3o encontrada.</div>';
 
-  qsa("[data-edit-session]").forEach((button) => { button.onclick = () => buildSessionForm(button.dataset.editSession); });
+  qsa("[data-show-session]").forEach((button) => {
+    button.onclick = () => {
+      const row = qs(`[data-session-detail="${button.dataset.showSession}"]`);
+      row?.classList.toggle("hidden");
+      button.textContent = row?.classList.contains("hidden") ? "Detalhes" : "Ocultar";
+    };
+  });
+  qsa("[data-edit-session]").forEach((button) => {
+    button.onclick = () => {
+      buildSessionForm(button.dataset.editSession);
+      qs("#sessionFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  });
   qsa("[data-delete-session]").forEach((button) => {
     button.onclick = async () => {
       try {

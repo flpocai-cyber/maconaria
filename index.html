@@ -157,25 +157,33 @@
   </template>
 
   <template id="sessionsTemplate">
-    <div class="content-grid">
-      <article class="panel-card form-panel">
+    <div class="sessions-layout">
+      <section class="sessions-page-header">
+        <div>
+          <h2 class="page-title">Sess&otilde;es</h2>
+          <p class="page-breadcrumb">PAINEL / SESS&Otilde;ES</p>
+        </div>
+        <div class="sessions-toolbar">
+          <input id="sessionSearch" class="search-input toolbar-input" type="search" placeholder="Pesquisar por tema...">
+          <input id="sessionDateFrom" class="toolbar-input" type="date" aria-label="Filtrar data inicial">
+          <input id="sessionDateTo" class="toolbar-input" type="date" aria-label="Filtrar data final">
+          <button type="button" class="toolbar-icon-btn" id="sessionFilterBtn" aria-label="Aplicar filtro">⌕</button>
+          <button type="button" class="btn btn-add-session" id="openSessionFormBtn">Cadastrar</button>
+        </div>
+      </section>
+
+      <article class="panel-card sessions-table-card">
+        <div id="sessionsList"></div>
+      </article>
+
+      <article class="panel-card" id="sessionFormCard">
         <div class="panel-header">
           <div>
             <p class="section-kicker">Sess&atilde;o</p>
-            <h2 class="section-title">Nova sess&atilde;o</h2>
+            <h2 class="section-title">Cadastro e edi&ccedil;&atilde;o</h2>
           </div>
         </div>
         <form id="sessionForm" class="form-grid"></form>
-      </article>
-      <article class="panel-card">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Sess&otilde;es cadastradas</p>
-            <h2 class="section-title">Livro de presen&ccedil;a</h2>
-          </div>
-          <input id="sessionSearch" class="search-input" type="search" placeholder="Pesquisar por tema ou observa&ccedil;&atilde;o">
-        </div>
-        <div id="sessionsList"></div>
       </article>
     </div>
   </template>
