@@ -232,7 +232,14 @@ function renderBrothers() {
   qs("#brothers").innerHTML = qs("#brothersTemplate").innerHTML;
   buildBrotherForm();
   buildBrothersTable("");
-  qs("#brotherSearch").addEventListener("input", (event) => buildBrothersTable(event.target.value));
+  const renderFilteredBrothers = () => buildBrothersTable(qs("#brotherSearch").value);
+  qs("#brotherSearch").addEventListener("input", renderFilteredBrothers);
+  qs("#brotherDegreeFilter").addEventListener("change", renderFilteredBrothers);
+  qs("#brotherFilterBtn").onclick = renderFilteredBrothers;
+  qs("#openBrotherFormBtn").onclick = () => {
+    buildBrotherForm();
+    qs("#brotherFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 }
 
 function buildBrotherForm(editId = "") {
@@ -301,21 +308,62 @@ function buildBrotherForm(editId = "") {
 
 function buildBrothersTable(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
-  const brothers = state.brothers.filter((brother) => [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term)));
+  const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
+  const brothers = state.brothers.filter((brother) => {
+    const matchesTerm = [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term));
+    const matchesDegree = !selectedDegree || brother.degree === selectedDegree;
+    return matchesTerm && matchesDegree;
+  });
   qs("#brothersTable").innerHTML = brothers.length ? `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>CPF</th><th>Contato</th><th>Esposa</th><th>A\u00e7\u00f5es</th></tr></thead>
+    <div class="table-wrap brothers-table-wrap">
+      <table class="brothers-table">
+        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>Op\u00e7\u00f5es</th></tr></thead>
         <tbody>
           ${brothers.map((brother) => `
             <tr>
-              <td><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(brother.treatmentName || "-")}</div></td>
+              <td><strong>${escapeHtml(brother.name)}</strong></td>
               <td><span class="badge ${brother.degree}">${escapeHtml(getDegreeLabel(brother.degree))}</span></td>
               <td>${escapeHtml(brother.cim)}</td>
-              <td>${escapeHtml(brother.cpf || "-")}</td>
-              <td><div>${escapeHtml(brother.phone || "-")}</div><div class="muted">${escapeHtml(brother.email || "-")}</div></td>
-              <td>${escapeHtml(brother.wifeName || "-")}</td>
-              <td><button class="btn-secondary" data-edit-brother="${brother.id}">Editar</button> <button class="btn-secondary" data-delete-brother="${brother.id}">Excluir</button></td>
+              <td>
+                <div class="session-actions">
+                  <button class="table-action-btn" data-show-brother="${brother.id}">Detalhes</button>
+                  <button class="table-action-btn" data-edit-brother="${brother.id}">Editar</button>
+                  <button class="table-action-btn danger" data-delete-brother="${brother.id}">Excluir</button>
+                </div>
+              </td>
+            </tr>
+            <tr class="brother-detail-row hidden" data-brother-detail="${brother.id}">
+              <td colspan="4">
+                <div class="brother-inline-detail">
+                  <div class="brother-detail-block">
+                    <strong>Dados do irm\u00e3o</strong>
+                    <div class="brother-detail-grid">
+                      <div><span class="muted">Nome</span><strong>${escapeHtml(brother.name || "-")}</strong></div>
+                      <div><span class="muted">Tratamento</span><strong>${escapeHtml(brother.treatmentName || "-")}</strong></div>
+                      <div><span class="muted">Grau</span><strong>${escapeHtml(getDegreeLabel(brother.degree))}</strong></div>
+                      <div><span class="muted">CIM</span><strong>${escapeHtml(brother.cim || "-")}</strong></div>
+                      <div><span class="muted">CPF</span><strong>${escapeHtml(brother.cpf || "-")}</strong></div>
+                      <div><span class="muted">Nascimento</span><strong>${escapeHtml(formatDate(brother.birthDate))}</strong></div>
+                      <div><span class="muted">Telefone</span><strong>${escapeHtml(brother.phone || "-")}</strong></div>
+                      <div><span class="muted">E-mail</span><strong>${escapeHtml(brother.email || "-")}</strong></div>
+                      <div class="detail-span-2"><span class="muted">Endere\u00e7o</span><strong>${escapeHtml(brother.address || "-")}</strong></div>
+                      <div><span class="muted">Inicia\u00e7\u00e3o</span><strong>${escapeHtml(formatDate(brother.initiationDate))}</strong></div>
+                      <div><span class="muted">Eleva\u00e7\u00e3o</span><strong>${escapeHtml(formatDate(brother.elevationDate))}</strong></div>
+                      <div><span class="muted">Exalta\u00e7\u00e3o</span><strong>${escapeHtml(formatDate(brother.exaltationDate))}</strong></div>
+                      <div><span class="muted">Em\u00e9rito</span><strong>${escapeHtml(formatDate(brother.emeritoDate))}</strong></div>
+                      <div><span class="muted">Benem\u00e9rito</span><strong>${escapeHtml(formatDate(brother.benemeritoDate))}</strong></div>
+                    </div>
+                  </div>
+                  <div class="brother-detail-block">
+                    <strong>Esposa</strong>
+                    <div class="brother-detail-grid">
+                      <div><span class="muted">Nome</span><strong>${escapeHtml(brother.wifeName || "-")}</strong></div>
+                      <div><span class="muted">Nascimento</span><strong>${escapeHtml(formatDate(brother.wifeBirthDate))}</strong></div>
+                      <div><span class="muted">Telefone</span><strong>${escapeHtml(brother.wifePhone || "-")}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </td>
             </tr>
           `).join("")}
         </tbody>
@@ -323,7 +371,19 @@ function buildBrothersTable(searchTerm) {
     </div>
   ` : '<div class="empty-state">Nenhum irm\u00e3o encontrado.</div>';
 
-  qsa("[data-edit-brother]").forEach((button) => { button.onclick = () => buildBrotherForm(button.dataset.editBrother); });
+  qsa("[data-show-brother]").forEach((button) => {
+    button.onclick = () => {
+      const row = qs(`[data-brother-detail="${button.dataset.showBrother}"]`);
+      row?.classList.toggle("hidden");
+      button.textContent = row?.classList.contains("hidden") ? "Detalhes" : "Ocultar";
+    };
+  });
+  qsa("[data-edit-brother]").forEach((button) => {
+    button.onclick = () => {
+      buildBrotherForm(button.dataset.editBrother);
+      qs("#brotherFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  });
   qsa("[data-delete-brother]").forEach((button) => {
     button.onclick = async () => {
       try {

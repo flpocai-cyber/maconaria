@@ -136,8 +136,30 @@
   </template>
 
   <template id="brothersTemplate">
-    <div class="content-grid">
-      <article class="panel-card form-panel">
+    <div class="sessions-layout brothers-layout">
+      <section class="sessions-page-header">
+        <div>
+          <h2 class="page-title">Irm&atilde;os do Quadro</h2>
+          <p class="page-breadcrumb">PAINEL / CONTATOS / IRM&Atilde;OS DO QUADRO</p>
+        </div>
+        <div class="sessions-toolbar brothers-toolbar">
+          <input id="brotherSearch" class="search-input toolbar-input" type="search" placeholder="Pesquisar por nome...">
+          <select id="brotherDegreeFilter" class="toolbar-input" aria-label="Filtrar por grau">
+            <option value="">Todos graus</option>
+            <option value="aprendiz">Aprendiz</option>
+            <option value="companheiro">Companheiro</option>
+            <option value="mestre">Mestre</option>
+          </select>
+          <button type="button" class="btn-secondary toolbar-search-btn" id="brotherFilterBtn">Buscar</button>
+          <button type="button" class="btn btn-add-session" id="openBrotherFormBtn">Cadastrar</button>
+        </div>
+      </section>
+
+      <article class="panel-card brothers-table-card">
+        <div id="brothersTable"></div>
+      </article>
+
+      <article class="panel-card" id="brotherFormCard">
         <div class="panel-header">
           <div>
             <p class="section-kicker">Cadastro</p>
@@ -145,16 +167,6 @@
           </div>
         </div>
         <form id="brotherForm" class="form-grid"></form>
-      </article>
-      <article class="panel-card">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Quadro da loja</p>
-            <h2 class="section-title">Irm&atilde;os cadastrados</h2>
-          </div>
-          <input id="brotherSearch" class="search-input" type="search" placeholder="Pesquisar por nome, CIM ou grau">
-        </div>
-        <div id="brothersTable"></div>
       </article>
     </div>
   </template>
