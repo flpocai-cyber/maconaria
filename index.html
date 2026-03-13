@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -31,7 +31,7 @@
   <header class="site-header">
     <div class="topbar">
       <div class="brand-wrap">
-        <div class="brand-mark">A</div>
+        <div class="brand-mark"><img src="logo-loja.png" alt="Logo da loja" class="brand-logo" onerror="this.style.display='none'; this.parentElement.classList.add('fallback-brand'); this.parentElement.textContent='A';"></div>
         <div>
           <h1 class="brand-title">Painel da Loja</h1>
           <p class="brand-subtitle">Controle de presen&ccedil;a</p>
@@ -39,11 +39,11 @@
       </div>
       <div class="topbar-actions">
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
-          <span id="themeToggleIcon">◐</span>
+          <span id="themeToggleIcon">?</span>
         </button>
         <button type="button" class="help-btn" aria-label="Ajuda">?</button>
         <div class="profile-chip">
-          <div class="profile-avatar">FP</div>
+          <div class="profile-avatar"><img src="logo-loja.png" alt="Logo da loja" class="profile-logo" onerror="this.style.display='none'; this.parentElement.classList.add('fallback-avatar'); this.parentElement.textContent='FP';"></div>
           <div class="profile-meta">
             <strong>F&aacute;bio Lu&iacute;s Pocai</strong>
             <span id="todayLabel"></span>
@@ -168,7 +168,7 @@
           <input id="sessionSearch" class="search-input toolbar-input" type="search" placeholder="Pesquisar por tema...">
           <input id="sessionDateFrom" class="toolbar-input" type="date" aria-label="Filtrar data inicial">
           <input id="sessionDateTo" class="toolbar-input" type="date" aria-label="Filtrar data final">
-          <button type="button" class="toolbar-icon-btn" id="sessionFilterBtn" aria-label="Aplicar filtro">⌕</button>
+          <button type="button" class="toolbar-icon-btn" id="sessionFilterBtn" aria-label="Aplicar filtro">âŒ•</button>
           <button type="button" class="btn btn-add-session" id="openSessionFormBtn">Cadastrar</button>
         </div>
       </section>
@@ -247,3 +247,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
