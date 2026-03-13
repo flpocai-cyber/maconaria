@@ -204,33 +204,27 @@
   </template>
 
   <template id="reportsTemplate">
-    <div class="reports-layout">
-      <article class="panel-card">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Relat&oacute;rio</p>
-            <h2 class="section-title">Irm&atilde;os do quadro</h2>
-          </div>
+    <div class="reports-shell">
+      <section class="sessions-page-header">
+        <div>
+          <h2 class="page-title">Relat&oacute;rio de Frequ&ecirc;ncia</h2>
+          <p class="page-breadcrumb">PAINEL / RELAT&Oacute;RIOS / RELAT&Oacute;RIO DE FREQU&Ecirc;NCIA</p>
         </div>
-        <div id="brothersReportControls"></div>
-        <div id="brothersReportTable"></div>
-      </article>
-      <article class="panel-card">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Relat&oacute;rio</p>
-            <h2 class="section-title">Presen&ccedil;as por per&iacute;odo</h2>
-          </div>
+        <div class="sessions-toolbar reports-toolbar">
+          <select id="reportDegreeFilter" class="toolbar-input" aria-label="Filtrar por grau da sessão">
+            <option value="">Todos graus</option>
+            <option value="aprendiz">Aprendiz</option>
+            <option value="companheiro">Companheiro</option>
+            <option value="mestre">Mestre</option>
+          </select>
+          <input id="reportDateFrom" class="toolbar-input" type="date" aria-label="Filtrar data inicial">
+          <input id="reportDateTo" class="toolbar-input" type="date" aria-label="Filtrar data final">
+          <button type="button" class="btn-secondary toolbar-search-btn" id="attendanceFilterBtn">Filtrar</button>
         </div>
-        <div id="attendanceReportControls"></div>
-        <div class="report-summary">
-          <div class="chart-container">
-            <div id="attendancePie" class="pie-chart large"></div>
-          </div>
-          <div id="attendanceLegend" class="legend-list"></div>
-        </div>
-        <div id="attendanceReportTable"></div>
-      </article>
+      </section>
+
+      <div id="reportsContent"></div>
+
       <article class="panel-card">
         <div class="panel-header">
           <div>

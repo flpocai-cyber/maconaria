@@ -594,48 +594,295 @@ function resolveBrotherField(brother, key) {
 
 function renderReports() {
   qs("#reports").innerHTML = qs("#reportsTemplate").innerHTML;
-  buildBrothersReport();
   buildAttendanceReport();
   buildVisitorsReport();
 }
 
-function buildBrothersReport() {
-  qs("#brothersReportControls").innerHTML = `<div class="checkbox-list">${REPORT_FIELDS.map((field) => `<label><input type="checkbox" value="${field.key}" ${["name", "degree", "cim"].includes(field.key) ? "checked" : ""}> ${field.label}</label>`).join("")}</div>`;
-  const renderTable = () => {
-    const selected = qsa("input:checked", qs("#brothersReportControls")).map((input) => input.value);
-    const headers = REPORT_FIELDS.filter((field) => selected.includes(field.key));
-    qs("#brothersReportTable").innerHTML = headers.length ? `<div class="table-wrap"><table><thead><tr>${headers.map((field) => `<th>${field.label}</th>`).join("")}</tr></thead><tbody>${state.brothers.map((brother) => `<tr>${headers.map((field) => `<td>${escapeHtml(resolveBrotherField(brother, field.key))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : '<div class="empty-state">Selecione pelo menos um campo.</div>';
+function getInitialReportRange() {
+  const allDates = state.sessions
+    .map((session) => session.datetime?.slice(0, 10))
+    .filter(Boolean)
+    .sort();
+  const max = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
+  const maxDate = new Date(`${max}T00:00:00`);
+  const startDate = new Date(maxDate);
+  startDate.setMonth(startDate.getMonth() - 3);
+  return {
+    dateFrom: startDate.toISOString().slice(0, 10),
+    dateTo: max
   };
-  qsa("input", qs("#brothersReportControls")).forEach((input) => { input.onchange = renderTable; });
-  renderTable();
+}
+
+function getAttendanceReportFilters() {
+  return {
+    degree: qs("#reportDegreeFilter")?.value || "",
+    dateFrom: qs("#reportDateFrom")?.value || "",
+    dateTo: qs("#reportDateTo")?.value || ""
+  };
+}
+
+function getFilteredAttendanceSessions(filters) {
+  return state.sessions.filter((session) => {
+    const sessionDate = session.datetime?.slice(0, 10) || "";
+    if (filters.degree && session.degree !== filters.degree) return false;
+    if (filters.dateFrom && sessionDate < filters.dateFrom) return false;
+    if (filters.dateTo && sessionDate > filters.dateTo) return false;
+    return true;
+  });
+}
+
+function buildAttendanceLineChart(sessions) {
+  if (!sessions.length) {
+    return '<div class="empty-state">Nenhuma sess&atilde;o encontrada no per&iacute;odo selecionado.</div>';
+  }
+
+  const chronological = [...sessions].sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+  const values = chronological.map((session) => session.attendance.length);
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const width = 820;
+  const height = 320;
+  const left = 20;
+  const right = width - 20;
+  const top = 18;
+  const bottom = height - 34;
+  const usableWidth = right - left;
+  const usableHeight = bottom - top;
+  const range = Math.max(max - min, 1);
+
+  const points = chronological.map((session, index) => {
+    const x = left + (chronological.length === 1 ? usableWidth / 2 : (index / (chronological.length - 1)) * usableWidth);
+    const y = bottom - (((session.attendance.length - min) / range) * usableHeight);
+    return { x, y, session };
+  });
+
+  const linePath = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+  const areaPath = `${linePath} L ${points[points.length - 1].x} ${bottom} L ${points[0].x} ${bottom} Z`;
+  const labels = points.map((point) => `<text x="${point.x}" y="${height - 8}" text-anchor="middle">${escapeHtml(formatDate(point.session.datetime))}</text>`).join("");
+  const markers = points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="3.5"></circle>`).join("");
+
+  return `
+    <div class="report-line-chart">
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="Presenças por sessão">
+        <path class="chart-area" d="${areaPath}"></path>
+        <path class="chart-line" d="${linePath}"></path>
+        ${markers}
+        ${labels}
+      </svg>
+    </div>
+  `;
+}
+
+function getBrotherAttendanceRows(sessions) {
+  return state.brothers.map((brother) => {
+    const possibleSessions = sessions.filter((session) => canAttendSession(brother.degree, session.degree));
+    const presentSessions = sessions.filter((session) => session.attendance.includes(brother.id));
+    const possible = possibleSessions.length;
+    const present = presentSessions.length;
+    const percentage = possible ? Math.round((present / possible) * 100) : 0;
+    return {
+      brother,
+      possible,
+      present,
+      percentage,
+      presentSessions
+    };
+  }).filter((row) => row.possible > 0)
+    .sort((a, b) => b.percentage - a.percentage || b.present - a.present || a.brother.name.localeCompare(b.brother.name));
+}
+
+function getProgressTone(percentage) {
+  if (percentage >= 85) return "good";
+  if (percentage >= 50) return "medium";
+  return "low";
+}
+
+function renderAttendanceOverview(filters) {
+  const sessions = getFilteredAttendanceSessions(filters);
+  const rows = getBrotherAttendanceRows(sessions);
+  qs("#reportsContent").innerHTML = `
+    <article class="panel-card report-main-card">
+      <div class="report-summary-head">
+        <strong>Total de sess&otilde;es: ${sessions.length}</strong>
+      </div>
+      ${buildAttendanceLineChart(sessions)}
+      <div class="report-section-block">
+        <h3 class="section-title report-section-title">Frequ&ecirc;ncia por irm&atilde;os</h3>
+        ${rows.length ? `
+          <div class="table-wrap report-table-wrap">
+            <table class="attendance-ranking-table">
+              <thead>
+                <tr>
+                  <th>Irm&atilde;o</th>
+                  <th>CIM</th>
+                  <th>Frequ&ecirc;ncia</th>
+                  <th>Porcentagem</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row) => `
+                  <tr>
+                    <td>${escapeHtml(row.brother.name)}</td>
+                    <td>${escapeHtml(row.brother.cim)}</td>
+                    <td>${row.present}</td>
+                    <td>
+                      <div class="attendance-progress-cell">
+                        <span>${row.percentage}%</span>
+                        <div class="attendance-progress">
+                          <div class="attendance-progress-bar ${getProgressTone(row.percentage)}" style="width:${row.percentage}%"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><button type="button" class="table-action-btn" data-report-detail="${row.brother.id}">Detalhes</button></td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        ` : '<div class="empty-state">Nenhum irm&atilde;o possui sess&otilde;es poss&iacute;veis nesse per&iacute;odo.</div>'}
+      </div>
+    </article>
+  `;
+
+  qsa("[data-report-detail]").forEach((button) => {
+    button.onclick = () => renderAttendanceBrotherDetail(button.dataset.reportDetail, filters);
+  });
 }
 
 function buildAttendanceReport() {
-  qs("#attendanceReportControls").innerHTML = `<div class="report-filters"><select id="attendanceRange"><option value="1">\u00daltimo m\u00eas</option><option value="2">\u00daltimos 2 meses</option><option value="3" selected>\u00daltimos 3 meses</option><option value="6">\u00daltimos 6 meses</option><option value="12">\u00daltimos 12 meses</option></select></div>`;
-  const renderAttendance = () => {
-    const sessions = getPeriodSessions(Number(qs("#attendanceRange").value));
-    const totals = { aprendiz: 0, companheiro: 0, mestre: 0, faltas: 0 };
-    sessions.forEach((session) => {
-      totals[session.degree] += 1;
-      getEligibleBrothers(session.degree).forEach((brother) => {
-        if (!session.attendance.includes(brother.id)) totals.faltas += 1;
-      });
-    });
-    renderPieChart(qs("#attendancePie"), qs("#attendanceLegend"), [
-      { label: "Sess\u00f5es de Aprendiz", value: totals.aprendiz, color: PIE_COLORS.aprendiz },
-      { label: "Sess\u00f5es de Companheiro", value: totals.companheiro, color: PIE_COLORS.companheiro },
-      { label: "Sess\u00f5es de Mestre", value: totals.mestre, color: PIE_COLORS.mestre },
-      { label: "Faltas", value: totals.faltas, color: PIE_COLORS.faltas }
-    ]);
-    qs("#attendanceReportTable").innerHTML = state.brothers.length ? `<div class="table-wrap"><table><thead><tr><th>Irm\u00e3o</th><th>CIM</th><th>Grau</th><th>Presen\u00e7as</th><th>Sess\u00f5es poss\u00edveis</th><th>Percentual</th></tr></thead><tbody>${state.brothers.map((brother) => {
-      const possible = sessions.filter((session) => canAttendSession(brother.degree, session.degree)).length;
-      const present = sessions.filter((session) => session.attendance.includes(brother.id)).length;
-      const rate = possible ? Math.round((present / possible) * 100) : 0;
-      return `<tr><td>${escapeHtml(brother.name)}</td><td>${escapeHtml(brother.cim)}</td><td>${escapeHtml(getDegreeLabel(brother.degree))}</td><td>${present}</td><td>${possible}</td><td>${rate}%</td></tr>`;
-    }).join("")}</tbody></table></div>` : '<div class="empty-state">Cadastre irm\u00e3os e sess\u00f5es para visualizar o relat\u00f3rio.</div>';
-  };
-  qs("#attendanceRange").onchange = renderAttendance;
+  const initial = getInitialReportRange();
+  qs("#reportDateFrom").value = initial.dateFrom;
+  qs("#reportDateTo").value = initial.dateTo;
+  const renderAttendance = () => renderAttendanceOverview(getAttendanceReportFilters());
+  qs("#attendanceFilterBtn").onclick = renderAttendance;
+  qs("#reportDegreeFilter").onchange = renderAttendance;
+  qs("#reportDateFrom").onchange = renderAttendance;
+  qs("#reportDateTo").onchange = renderAttendance;
   renderAttendance();
+}
+
+function renderAttendanceBrotherDetail(brotherId, filters) {
+  const brother = state.brothers.find((item) => item.id === brotherId);
+  if (!brother) return;
+
+  const sessions = getFilteredAttendanceSessions(filters);
+  const presentSessions = sessions
+    .filter((session) => session.attendance.includes(brother.id))
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+
+  const groupedPresence = {
+    aprendiz: presentSessions.filter((session) => session.degree === "aprendiz").length,
+    companheiro: presentSessions.filter((session) => session.degree === "companheiro").length,
+    mestre: presentSessions.filter((session) => session.degree === "mestre").length
+  };
+  const totalPresent = presentSessions.length || 1;
+  const pieItems = [
+    { key: "aprendiz", label: "Aprendiz Ma\u00e7om", color: "#a7d489", value: groupedPresence.aprendiz },
+    { key: "companheiro", label: "Companheiro Ma\u00e7om", color: "#e06a2e", value: groupedPresence.companheiro },
+    { key: "mestre", label: "Mestre Ma\u00e7om", color: "#2c7be5", value: groupedPresence.mestre }
+  ].filter((item) => item.value > 0);
+
+  const possible = sessions.filter((session) => canAttendSession(brother.degree, session.degree)).length;
+  const pieTotal = pieItems.reduce((sum, item) => sum + item.value, 0);
+  const pieStyle = pieTotal ? `background: conic-gradient(${(() => {
+    let current = 0;
+    return pieItems.map((item) => {
+      const next = current + (item.value / pieTotal) * 360;
+      const segment = `${item.color} ${current}deg ${next}deg`;
+      current = next;
+      return segment;
+    }).join(", ");
+  })()})` : "";
+
+  qs("#reportsContent").innerHTML = `
+    <article class="panel-card report-main-card">
+      <div class="report-detail-top">
+        <div>
+          <button type="button" class="btn-secondary report-back-btn" id="backToAttendanceReport">Voltar</button>
+          <p class="page-breadcrumb">PAINEL / RELAT&Oacute;RIOS / RELAT&Oacute;RIO DE FREQU&Ecirc;NCIA</p>
+          <h3 class="section-title report-detail-title">Frequ&ecirc;ncia do Ir.: ${escapeHtml(brother.name)}</h3>
+          <p class="muted">CIM: ${escapeHtml(brother.cim)}</p>
+        </div>
+        <div class="sessions-toolbar reports-toolbar report-detail-toolbar">
+          <input class="toolbar-input" type="date" value="${escapeHtml(filters.dateFrom)}" disabled>
+          <input class="toolbar-input" type="date" value="${escapeHtml(filters.dateTo)}" disabled>
+          <button type="button" class="btn-secondary toolbar-search-btn" id="printAttendanceReport">Imprimir</button>
+        </div>
+      </div>
+
+      <div class="report-detail-layout">
+        <div>
+          <h3 class="section-title report-section-title">Frequ&ecirc;ncia do irm&atilde;o</h3>
+          ${presentSessions.length ? `
+            <div class="table-wrap report-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>T&iacute;tulo</th>
+                    <th>Tipo</th>
+                    <th>Grau</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${presentSessions.map((session) => `
+                    <tr>
+                      <td>${escapeHtml(formatDate(session.datetime))}</td>
+                      <td>${escapeHtml(normalizeBrokenText(session.theme))}</td>
+                      <td>Ordin&aacute;ria</td>
+                      <td>${escapeHtml(getDegreeLabel(session.degree))} Ma&ccedil;om</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : '<div class="empty-state">Nenhuma presen&ccedil;a encontrada para esse irm&atilde;o no per&iacute;odo.</div>'}
+        </div>
+
+        <div>
+          <h3 class="section-title report-section-title">Gr&aacute;ficos</h3>
+          <div class="report-brother-chart">
+            <div class="report-brother-pie" style="${pieStyle}"></div>
+            <div class="legend-list">
+              ${pieItems.length ? pieItems.map((item) => `<div class="legend-item"><div><span class="legend-swatch" style="background:${item.color}"></span>${item.value} - ${escapeHtml(item.label)}</div></div>`).join("") : '<div class="empty-state">Sem dados para o gr&aacute;fico.</div>'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-section-block">
+        <h3 class="section-title report-section-title">Porcentagem de Presen&ccedil;a por Grau</h3>
+        <div class="table-wrap report-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Grau</th>
+                <th>Total de presen&ccedil;as</th>
+                <th>Porcentagem</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[
+                ["Aprendiz Ma\u00e7om", groupedPresence.aprendiz],
+                ["Companheiro Ma\u00e7om", groupedPresence.companheiro],
+                ["Mestre Ma\u00e7om", groupedPresence.mestre]
+              ].filter(([, value]) => value > 0).map(([label, value]) => `
+                <tr>
+                  <td>${label}</td>
+                  <td>${value}</td>
+                  <td>${possible ? ((value / possible) * 100).toFixed(2) : "0.00"}%</td>
+                </tr>
+              `).join("") || '<tr><td colspan="3">Sem presen&ccedil;as registradas nesse per&iacute;odo.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+  `;
+
+  qs("#backToAttendanceReport").onclick = () => renderAttendanceOverview(filters);
+  qs("#printAttendanceReport").onclick = () => window.print();
 }
 
 function buildVisitorsReport() {
