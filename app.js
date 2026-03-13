@@ -416,16 +416,19 @@ function buildSessionForm(editId = "", draft = null) {
   const session = draft || state.sessions.find((item) => item.id === editId) || { degree: "aprendiz", attendance: [], visitors: [] };
   const eligible = getEligibleBrothers(session.degree);
   let visitors = [...(session.visitors || [])];
+  const isDarkTheme = document.body.dataset.theme === "dark";
+  const darkPanelStyle = isDarkTheme ? ' style="background:#0f172a;border-color:#243247;"' : "";
+  const darkSecondaryButtonStyle = isDarkTheme ? ' style="background:linear-gradient(135deg,#8a0000,#b00000);color:#ffffff;border:1px solid rgba(255,255,255,0.08);opacity:1;-webkit-appearance:none;appearance:none;"' : "";
 
   qs("#sessionForm").innerHTML = `
     ${datetimeField("datetime", "Data e hora", session.datetime, true)}
     ${selectField("degree", "Grau da sess\u00e3o", SESSION_LEVELS, session.degree, true)}
     ${textField("theme", "Tema", normalizeBrokenText(session.theme), true)}
     ${textareaField("notes", "Observa\u00e7\u00f5es", normalizeBrokenText(session.notes), "field-wide")}
-    <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
-    <div class="field-wide"><label>Visitantes</label><div class="visitors-panel"><div id="visitorsEditor"></div><div class="visitor-form-inline"><input id="visitorName" placeholder="Nome do visitante"><input id="visitorLodge" placeholder="A.R.L.S."><input id="visitorCity" placeholder="Cidade"><button type="button" class="btn-secondary" id="addVisitorBtn">Adicionar visitante</button></div></div></div>
+    <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"${darkPanelStyle}><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
+    <div class="field-wide"><label>Visitantes</label><div class="visitors-panel"${darkPanelStyle}><div id="visitorsEditor"></div><div class="visitor-form-inline"${darkPanelStyle}><input id="visitorName" placeholder="Nome do visitante"><input id="visitorLodge" placeholder="A.R.L.S."><input id="visitorCity" placeholder="Cidade"><button type="button" class="btn-secondary" id="addVisitorBtn"${darkSecondaryButtonStyle}>Adicionar visitante</button></div></div></div>
     <input type="hidden" name="id" value="${escapeHtml(editId)}">
-    <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sess\u00e3o" : "Cadastrar sess\u00e3o"}</button><button type="button" class="btn-secondary" id="resetSessionForm">Limpar</button></div>
+    <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sess\u00e3o" : "Cadastrar sess\u00e3o"}</button><button type="button" class="btn-secondary" id="resetSessionForm"${darkSecondaryButtonStyle}>Limpar</button></div>
   `;
 
   function renderVisitorsEditor() {
@@ -697,6 +700,117 @@ function getProgressTone(percentage) {
   return "low";
 }
 
+function printAttendanceOverview(filters) {
+  const sessions = getFilteredAttendanceSessions(filters);
+  const rows = getBrotherAttendanceRows(sessions);
+  const printWindow = window.open("", "_blank", "width=960,height=720");
+  if (!printWindow) {
+    showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o.");
+    return;
+  }
+
+  const degreeLabel = filters.degree ? getDegreeLabel(filters.degree) : "Todos graus";
+  const periodLabel = `${formatDate(filters.dateFrom)} a ${formatDate(filters.dateTo)}`;
+  const logoUrl = new URL("logo-loja.png", window.location.href).toString();
+  const rowsHtml = rows.length ? rows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.brother.name)}</td>
+      <td>${escapeHtml(row.brother.cim)}</td>
+      <td>${row.present}</td>
+      <td>${row.percentage}%</td>
+    </tr>
+  `).join("") : '<tr><td colspan="4">Nenhum irm\u00e3o encontrado para os filtros selecionados.</td></tr>';
+
+  printWindow.document.write(`<!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Frequ\u00eancia por irm\u00e3o</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #111827;
+        margin: 32px;
+      }
+      .print-header {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .print-header img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        margin-bottom: 12px;
+      }
+      .print-header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .print-header h2 {
+        margin: 10px 0 6px;
+        font-size: 20px;
+      }
+      .print-meta {
+        margin: 0;
+        color: #4b5563;
+        font-size: 14px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+      }
+      th, td {
+        border: 1px solid #d1d5db;
+        padding: 10px 12px;
+        text-align: left;
+      }
+      th {
+        background: #f3f4f6;
+      }
+      @media print {
+        body {
+          margin: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="print-header">
+      <img src="${logoUrl}" alt="Logo da loja">
+      <h1>A.'.R.'.G.'.E.'.D.'.P.'.M.'.L.'.S.'. F\u00e9, Esperan\u00e7a e Caridade 100</h1>
+      <h2>Frequ\u00eancia por irm\u00e3o</h2>
+      <p class="print-meta">Per\u00edodo: ${escapeHtml(periodLabel)} | Grau: ${escapeHtml(degreeLabel)}</p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Irm\u00e3o</th>
+          <th>CIM</th>
+          <th>Frequ\u00eancia</th>
+          <th>Porcentagem</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+  </body>
+  </html>`);
+  printWindow.document.close();
+  const triggerPrint = () => {
+    printWindow.focus();
+    printWindow.print();
+  };
+  const logo = printWindow.document.querySelector("img");
+  if (logo) {
+    logo.onload = () => setTimeout(triggerPrint, 150);
+    logo.onerror = () => triggerPrint();
+  } else {
+    triggerPrint();
+  }
+}
+
 function renderAttendanceOverview(filters) {
   const sessions = getFilteredAttendanceSessions(filters);
   const rows = getBrotherAttendanceRows(sessions);
@@ -756,6 +870,7 @@ function buildAttendanceReport() {
   qs("#reportDateTo").value = initial.dateTo;
   const renderAttendance = () => renderAttendanceOverview(getAttendanceReportFilters());
   qs("#attendanceFilterBtn").onclick = renderAttendance;
+  qs("#attendancePrintBtn").onclick = () => printAttendanceOverview(getAttendanceReportFilters());
   qs("#reportDegreeFilter").onchange = renderAttendance;
   qs("#reportDateFrom").onchange = renderAttendance;
   qs("#reportDateTo").onchange = renderAttendance;
