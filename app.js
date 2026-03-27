@@ -37,6 +37,13 @@ function qs(selector, scope = document) { return scope.querySelector(selector); 
 function qsa(selector, scope = document) { return [...scope.querySelectorAll(selector)]; }
 function getDegreeLabel(value) { return BROTHER_LEVELS[value] || value || "-"; }
 function sortSessions() { state.sessions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime)); }
+function getDefaultSessionDatetime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}T20:00`;
+}
 function canAttendSession(brotherDegree, sessionDegree) {
   const order = { aprendiz: 1, companheiro: 2, mestre: 3 };
   return order[brotherDegree] >= order[sessionDegree];
@@ -413,7 +420,7 @@ function renderSessions() {
 }
 
 function buildSessionForm(editId = "", draft = null) {
-  const session = draft || state.sessions.find((item) => item.id === editId) || { degree: "aprendiz", attendance: [], visitors: [] };
+  const session = draft || state.sessions.find((item) => item.id === editId) || { datetime: getDefaultSessionDatetime(), degree: "aprendiz", attendance: [], visitors: [] };
   const eligible = getEligibleBrothers(session.degree);
   let visitors = [...(session.visitors || [])];
   const isDarkTheme = document.body.dataset.theme === "dark";

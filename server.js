@@ -43,16 +43,16 @@ async function parseBody(req) {
 }
 
 function notFound(res) {
-  sendJson(res, 404, { error: "Não encontrado." });
+  sendJson(res, 404, { error: "NÃ£o encontrado." });
 }
 
 function validateBrother(input) {
-  if (!input.name || !input.cim || !input.degree) return "Nome, CIM e grau são obrigatórios.";
+  if (!input.name || !input.cim || !input.degree) return "Nome, CIM e grau sÃ£o obrigatÃ³rios.";
   return null;
 }
 
 function validateSession(input) {
-  if (!input.datetime || !input.theme || !input.degree) return "Data/hora, tema e grau são obrigatórios.";
+  if (!input.datetime || !input.theme || !input.degree) return "Data/hora, tema e grau sÃ£o obrigatÃ³rios.";
   return null;
 }
 
@@ -91,6 +91,22 @@ function normalizeSession(input) {
       city: String(visitor.city || "").trim()
     })) : []
   };
+}
+
+function canAttendSession(brotherDegree, sessionDegree) {
+  const order = { aprendiz: 1, companheiro: 2, mestre: 3 };
+  return order[brotherDegree] >= order[sessionDegree];
+}
+
+function sanitizeSessionAttendance(session, brothers) {
+  const eligibleIds = new Set(
+    brothers
+      .filter((brother) => canAttendSession(brother.degree, session.degree))
+      .map((brother) => brother.id)
+  );
+
+  session.attendance = [...new Set(session.attendance)].filter((brotherId) => eligibleIds.has(brotherId));
+  return session;
 }
 
 async function handleApi(req, res, url) {
@@ -133,6 +149,7 @@ async function handleApi(req, res, url) {
     const body = normalizeSession(await parseBody(req));
     const error = validateSession(body);
     if (error) return sendJson(res, 400, { error });
+    sanitizeSessionAttendance(body, store.brothers);
     store.sessions.unshift(body);
     store.sessions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
     await writeStore(store);
@@ -145,6 +162,7 @@ async function handleApi(req, res, url) {
     const body = normalizeSession({ ...(await parseBody(req)), id });
     const error = validateSession(body);
     if (error) return sendJson(res, 400, { error });
+    sanitizeSessionAttendance(body, store.brothers);
     store.sessions = store.sessions.map((session) => session.id === id ? body : session);
     store.sessions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
     await writeStore(store);
@@ -190,7 +208,7 @@ const server = http.createServer(async (req, res) => {
     }
     await serveStatic(res, url.pathname);
   } catch (error) {
-    sendJson(res, 500, { error: "Erro interno ao processar a requisição.", details: error.message });
+    sendJson(res, 500, { error: "Erro interno ao processar a requisiÃ§Ã£o.", details: error.message });
   }
 });
 
