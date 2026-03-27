@@ -44,6 +44,21 @@ function getDefaultSessionDatetime() {
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}T20:00`;
 }
+function openSessionFormModal(editId = "", draft = null) {
+  const modal = qs("#sessionFormModal");
+  if (!modal) return;
+  buildSessionForm(editId, draft);
+  modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+function closeSessionFormModal() {
+  const modal = qs("#sessionFormModal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
 function canAttendSession(brotherDegree, sessionDegree) {
   const order = { aprendiz: 1, companheiro: 2, mestre: 3 };
   return order[brotherDegree] >= order[sessionDegree];
@@ -406,17 +421,17 @@ function buildBrothersTable(searchTerm) {
 
 function renderSessions() {
   qs("#sessions").innerHTML = qs("#sessionsTemplate").innerHTML;
-  buildSessionForm();
   buildSessionsList("");
   const renderFilteredSessions = () => buildSessionsList(qs("#sessionSearch").value);
   qs("#sessionSearch").addEventListener("input", renderFilteredSessions);
   qs("#sessionDateFrom").addEventListener("change", renderFilteredSessions);
   qs("#sessionDateTo").addEventListener("change", renderFilteredSessions);
   qs("#sessionFilterBtn").onclick = renderFilteredSessions;
-  qs("#openSessionFormBtn").onclick = () => {
-    buildSessionForm();
-    qs("#sessionFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  qs("#openSessionFormBtn").onclick = () => openSessionFormModal();
+  qs("#closeSessionFormBtn").onclick = () => closeSessionFormModal();
+  qsa("[data-close-session-form]").forEach((button) => {
+    button.onclick = () => closeSessionFormModal();
+  });
 }
 
 function buildSessionForm(editId = "", draft = null) {
@@ -426,8 +441,10 @@ function buildSessionForm(editId = "", draft = null) {
   const isDarkTheme = document.body.dataset.theme === "dark";
   const darkPanelStyle = isDarkTheme ? ' style="background:#0f172a;border-color:#243247;"' : "";
   const darkSecondaryButtonStyle = isDarkTheme ? ' style="background:linear-gradient(135deg,#8a0000,#b00000);color:#ffffff;border:1px solid rgba(255,255,255,0.08);opacity:1;-webkit-appearance:none;appearance:none;"' : "";
+  const formElement = qs("#sessionForm");
+  if (!formElement) return;
 
-  qs("#sessionForm").innerHTML = `
+  formElement.innerHTML = `
     ${datetimeField("datetime", "Data e hora", session.datetime, true)}
     ${selectField("degree", "Grau da sess\u00e3o", SESSION_LEVELS, session.degree, true)}
     ${textField("theme", "Tema", normalizeBrokenText(session.theme), true)}
@@ -438,9 +455,22 @@ function buildSessionForm(editId = "", draft = null) {
     <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sess\u00e3o" : "Cadastrar sess\u00e3o"}</button><button type="button" class="btn-secondary" id="resetSessionForm"${darkSecondaryButtonStyle}>Limpar</button></div>
   `;
 
+  const datetimeInput = qs("#datetime", formElement);
+  const degreeInput = qs("#degree", formElement);
+  const themeInput = qs("#theme", formElement);
+  const notesInput = qs("#notes", formElement);
+  const visitorsEditor = qs("#visitorsEditor", formElement);
+  const visitorNameInput = qs("#visitorName", formElement);
+  const visitorLodgeInput = qs("#visitorLodge", formElement);
+  const visitorCityInput = qs("#visitorCity", formElement);
+  const addVisitorButton = qs("#addVisitorBtn", formElement);
+  const resetButton = qs("#resetSessionForm", formElement);
+
+  if (datetimeInput && !editId && !draft) datetimeInput.value = getDefaultSessionDatetime();
+
   function renderVisitorsEditor() {
-    qs("#visitorsEditor").innerHTML = visitors.length ? `<div class="visitor-grid">${visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div><button type="button" class="btn-secondary" data-remove-visitor="${visitor.id}">Remover</button></div>`).join("")}</div>` : '<div class="empty-state">Nenhum visitante lan\u00e7ado nesta sess\u00e3o.</div>';
-    qsa("[data-remove-visitor]", qs("#visitorsEditor")).forEach((button) => {
+    visitorsEditor.innerHTML = visitors.length ? `<div class="visitor-grid">${visitors.map((visitor) => `<div class="visitor-row"><div><strong>${escapeHtml(visitor.name)}</strong><div class="muted">${escapeHtml(visitor.lodge || "A.R.L.S.")} \u2022 ${escapeHtml(visitor.city || "-")}</div></div><button type="button" class="btn-secondary" data-remove-visitor="${visitor.id}">Remover</button></div>`).join("")}</div>` : '<div class="empty-state">Nenhum visitante lan\u00e7ado nesta sess\u00e3o.</div>';
+    qsa("[data-remove-visitor]", visitorsEditor).forEach((button) => {
       button.onclick = () => {
         visitors = visitors.filter((item) => item.id !== button.dataset.removeVisitor);
         renderVisitorsEditor();
@@ -449,24 +479,32 @@ function buildSessionForm(editId = "", draft = null) {
   }
 
   renderVisitorsEditor();
-  qs("#addVisitorBtn").onclick = () => {
-    const name = qs("#visitorName").value.trim();
-    const lodge = qs("#visitorLodge").value.trim() || "A.R.L.S.";
-    const city = qs("#visitorCity").value.trim();
+  addVisitorButton.onclick = () => {
+    const name = visitorNameInput.value.trim();
+    const lodge = visitorLodgeInput.value.trim() || "A.R.L.S.";
+    const city = visitorCityInput.value.trim();
     if (!name) return;
     visitors.push({ id: crypto.randomUUID(), name, lodge, city });
-    qs("#visitorName").value = "";
-    qs("#visitorLodge").value = "";
-    qs("#visitorCity").value = "";
+    visitorNameInput.value = "";
+    visitorLodgeInput.value = "";
+    visitorCityInput.value = "";
     renderVisitorsEditor();
   };
 
-  qs("#degree").onchange = (event) => {
-    const checkedAttendance = qsa('input[name="attendance"]:checked', qs("#sessionForm")).map((input) => input.value);
-    buildSessionForm(editId, { ...session, degree: event.target.value, attendance: checkedAttendance, visitors, datetime: qs("#datetime").value, theme: qs("#theme").value, notes: qs("#notes").value });
+  degreeInput.onchange = (event) => {
+    const checkedAttendance = qsa('input[name="attendance"]:checked', formElement).map((input) => input.value);
+    buildSessionForm(editId, {
+      ...session,
+      degree: event.target.value,
+      attendance: checkedAttendance,
+      visitors,
+      datetime: datetimeInput.value || getDefaultSessionDatetime(),
+      theme: themeInput.value,
+      notes: notesInput.value
+    });
   };
 
-  qs("#sessionForm").onsubmit = async (event) => {
+  formElement.onsubmit = async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const payload = {
@@ -481,6 +519,7 @@ function buildSessionForm(editId = "", draft = null) {
     try {
       if (form.get("id")) await api(`/api/sessions/${form.get("id")}`, { method: "PUT", body: JSON.stringify(payload) });
       else await api("/api/sessions", { method: "POST", body: JSON.stringify(payload) });
+      closeSessionFormModal();
       await loadState();
       render();
     } catch (error) {
@@ -488,7 +527,7 @@ function buildSessionForm(editId = "", draft = null) {
     }
   };
 
-  qs("#resetSessionForm").onclick = () => buildSessionForm();
+  resetButton.onclick = () => buildSessionForm();
 }
 function buildSessionsList(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
@@ -568,8 +607,7 @@ function buildSessionsList(searchTerm) {
   });
   qsa("[data-edit-session]").forEach((button) => {
     button.onclick = () => {
-      buildSessionForm(button.dataset.editSession);
-      qs("#sessionFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      openSessionFormModal(button.dataset.editSession);
     };
   });
   qsa("[data-delete-session]").forEach((button) => {

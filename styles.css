@@ -1055,6 +1055,53 @@ tr:last-child td {
   color: #fff;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.modal-open {
+  overflow: hidden;
+}
+
+.form-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.form-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.form-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+.form-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: -1.5rem -1.5rem 1.25rem;
+  padding: 1.5rem;
+  background: inherit;
+}
+
+.form-modal-close {
+  min-width: 110px;
+}
+
 .visitor-form-inline,
 .report-filters,
 .checkbox-list {
@@ -1196,6 +1243,22 @@ tr:last-child td {
   .main-shell {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .form-modal {
+    padding: 1rem 0.75rem;
+  }
+
+  .form-modal-card {
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+    padding: 1rem;
+  }
+
+  .form-modal-header {
+    margin: -1rem -1rem 1rem;
+    padding: 1rem;
+    align-items: flex-start;
   }
 }
 

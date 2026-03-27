@@ -27,7 +27,7 @@
   </script>
   <link rel="icon" type="image/png" href="logo-loja.png">
   <link rel="apple-touch-icon" href="logo-loja.png">
-  <link rel="stylesheet" href="styles.css?v=20260313-02">
+  <link rel="stylesheet" href="styles.css?v=20260327-01">
 </head>
 <body class="bg-background text-secondary">
   <header class="site-header">
@@ -191,15 +191,19 @@
         <div id="sessionsList"></div>
       </article>
 
-      <article class="panel-card" id="sessionFormCard">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Sess&atilde;o</p>
-            <h2 class="section-title">Cadastro e edi&ccedil;&atilde;o</h2>
+      <div id="sessionFormModal" class="form-modal hidden" aria-hidden="true">
+        <div class="form-modal-backdrop" data-close-session-form></div>
+        <article class="panel-card form-modal-card" id="sessionFormCard">
+          <div class="panel-header form-modal-header">
+            <div>
+              <p class="section-kicker">Sess&atilde;o</p>
+              <h2 class="section-title">Cadastro e edi&ccedil;&atilde;o</h2>
+            </div>
+            <button type="button" class="btn-secondary form-modal-close" id="closeSessionFormBtn">Fechar</button>
           </div>
-        </div>
-        <form id="sessionForm" class="form-grid"></form>
-      </article>
+          <form id="sessionForm" class="form-grid"></form>
+        </article>
+      </div>
     </div>
   </template>
 
@@ -253,7 +257,7 @@
     </div>
   </template>
 
-  <script src="app.js?v=20260313-02"></script>
+  <script src="app.js?v=20260327-01"></script>
 </body>
 </html>
 
