@@ -654,7 +654,7 @@ function getInitialReportRange() {
   const max = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
   const maxDate = new Date(`${max}T00:00:00`);
   const startDate = new Date(maxDate);
-  startDate.setMonth(startDate.getMonth() - 3);
+  startDate.setMonth(startDate.getMonth() - 5);
   return {
     dateFrom: startDate.toISOString().slice(0, 10),
     dateTo: max
