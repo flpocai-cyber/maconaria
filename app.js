@@ -672,11 +672,14 @@ function getAttendanceReportFilters() {
 function getFilteredAttendanceSessions(filters) {
   return state.sessions.filter((session) => {
     const sessionDate = session.datetime?.slice(0, 10) || "";
-    if (filters.degree && session.degree !== filters.degree) return false;
     if (filters.dateFrom && sessionDate < filters.dateFrom) return false;
     if (filters.dateTo && sessionDate > filters.dateTo) return false;
     return true;
   });
+}
+
+function getFilteredAttendanceBrothers(filters) {
+  return state.brothers.filter((brother) => !filters.degree || brother.degree === filters.degree);
 }
 
 function buildAttendanceLineChart(sessions) {
@@ -721,8 +724,8 @@ function buildAttendanceLineChart(sessions) {
   `;
 }
 
-function getBrotherAttendanceRows(sessions) {
-  return state.brothers.map((brother) => {
+function getBrotherAttendanceRows(sessions, filters) {
+  return getFilteredAttendanceBrothers(filters).map((brother) => {
     const possibleSessions = sessions.filter((session) => canAttendSession(brother.degree, session.degree));
     const presentSessions = sessions.filter((session) => session.attendance.includes(brother.id));
     const possible = possibleSessions.length;
@@ -747,14 +750,14 @@ function getProgressTone(percentage) {
 
 function printAttendanceOverview(filters) {
   const sessions = getFilteredAttendanceSessions(filters);
-  const rows = getBrotherAttendanceRows(sessions);
+  const rows = getBrotherAttendanceRows(sessions, filters);
   const printWindow = window.open("", "_blank", "width=960,height=720");
   if (!printWindow) {
     showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o.");
     return;
   }
 
-  const degreeLabel = filters.degree ? getDegreeLabel(filters.degree) : "Todos graus";
+  const degreeLabel = filters.degree ? getDegreeLabel(filters.degree) : "Todos os irm\u00e3os";
   const periodLabel = `${formatDate(filters.dateFrom)} a ${formatDate(filters.dateTo)}`;
   const logoUrl = new URL("logo-loja.png", window.location.href).toString();
   const rowsHtml = rows.length ? rows.map((row) => `
@@ -825,7 +828,7 @@ function printAttendanceOverview(filters) {
       <img src="${logoUrl}" alt="Logo da loja">
       <h1>A.'.R.'.G.'.E.'.D.'.P.'.M.'.L.'.S.'. F\u00e9, Esperan\u00e7a e Caridade 100</h1>
       <h2>Frequ\u00eancia por irm\u00e3o</h2>
-      <p class="print-meta">Per\u00edodo: ${escapeHtml(periodLabel)} | Grau: ${escapeHtml(degreeLabel)}</p>
+      <p class="print-meta">Per\u00edodo: ${escapeHtml(periodLabel)} | Grau do irm\u00e3o: ${escapeHtml(degreeLabel)}</p>
     </div>
     <table>
       <thead>
@@ -858,7 +861,7 @@ function printAttendanceOverview(filters) {
 
 function renderAttendanceOverview(filters) {
   const sessions = getFilteredAttendanceSessions(filters);
-  const rows = getBrotherAttendanceRows(sessions);
+  const rows = getBrotherAttendanceRows(sessions, filters);
   qs("#reportsContent").innerHTML = `
     <article class="panel-card report-main-card">
       <div class="report-summary-head">
@@ -899,7 +902,7 @@ function renderAttendanceOverview(filters) {
               </tbody>
             </table>
           </div>
-        ` : '<div class="empty-state">Nenhum irm&atilde;o possui sess&otilde;es poss&iacute;veis nesse per&iacute;odo.</div>'}
+        ` : '<div class="empty-state">Nenhum irm&atilde;o encontrado para o grau e per&iacute;odo selecionados.</div>'}
       </div>
     </article>
   `;
