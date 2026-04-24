@@ -960,19 +960,22 @@ function renderAttendanceOverview(filters) {
           ${compactViewport ? `
             <div class="table-wrap report-mobile-wrap">
               <div class="attendance-mobile-list">
-                <div class="attendance-mobile-head">
-                  <span>Irmão</span>
-                  <span>Freq.</span>
-                  <span>Porcent.</span>
-                </div>
-              ${rows.map((row) => `
-                <article class="attendance-mobile-row">
-                  <div class="attendance-mobile-name">${escapeHtml(row.brother.name)}</div>
-                  <strong class="attendance-mobile-value">${row.present}</strong>
-                  <strong class="attendance-mobile-value">${row.percentage}%</strong>
-                  <button type="button" class="table-action-btn attendance-mobile-action" data-report-detail="${row.brother.id}">Detalhes</button>
-                </article>
-              `).join("")}
+                ${rows.map((row) => `
+                  <article class="attendance-mobile-row">
+                    <div class="attendance-mobile-name">${escapeHtml(row.brother.name)}</div>
+                    <div class="attendance-mobile-metrics">
+                      <div class="attendance-mobile-pill">
+                        <span>Freq.</span>
+                        <strong>${row.present}</strong>
+                      </div>
+                      <div class="attendance-mobile-pill">
+                        <span>Porcent.</span>
+                        <strong>${row.percentage}%</strong>
+                      </div>
+                    </div>
+                    <button type="button" class="table-action-btn attendance-mobile-action" data-report-detail="${row.brother.id}">Detalhes</button>
+                  </article>
+                `).join("")}
               </div>
             </div>
           ` : `
