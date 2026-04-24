@@ -473,6 +473,8 @@ textarea {
 .reports-shell {
   display: grid;
   gap: 1rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .reports-layout > .panel-card:last-child {
@@ -1703,14 +1705,21 @@ tr:last-child td {
   }
 
   .report-line-chart {
-    margin-left: -1rem;
-    margin-right: -1rem;
-    padding: 0 1rem 0.25rem;
+    margin: 0;
+    padding: 0 0 0.25rem;
   }
 
   .report-line-chart svg {
     min-width: 680px;
     height: 250px;
+  }
+
+  #reportsContent,
+  #visitorsReportControls,
+  #visitorsReportTable,
+  .reports-shell > .panel-card {
+    width: 100%;
+    max-width: 100%;
   }
 
   .report-line-chart text {
