@@ -1523,13 +1523,10 @@ tr:last-child td {
   }
 
   .topnav-wrap {
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
-    z-index: 90;
-    margin-top: 0;
-    padding: 0;
+    position: static;
+    z-index: auto;
+    margin-top: 0.55rem;
+    padding: 0 0.2rem 0.15rem;
     justify-content: stretch;
   }
 
@@ -1573,7 +1570,59 @@ tr:last-child td {
   }
 
   .main-shell {
-    padding: 1rem 1rem 6.5rem;
+    padding: 1rem;
+  }
+
+  .attendance-mobile-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .attendance-mobile-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+  }
+
+  .attendance-mobile-name {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--secondary);
+    word-break: break-word;
+  }
+
+  .attendance-mobile-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .attendance-mobile-metrics div {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.65rem 0.7rem;
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .attendance-mobile-metrics span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .attendance-mobile-metrics strong {
+    font-size: 1rem;
+  }
+
+  .attendance-mobile-action {
+    width: 100%;
   }
 
   .form-grid,

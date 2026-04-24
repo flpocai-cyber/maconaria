@@ -763,6 +763,10 @@ function getFilteredAttendanceBrothers(filters) {
   });
 }
 
+function isCompactViewport() {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
+}
+
 function buildAttendanceLineChart(sessions) {
   if (!sessions.length) {
     return '<div class="empty-state">Nenhuma sess&atilde;o encontrada no per&iacute;odo selecionado.</div>';
@@ -943,6 +947,7 @@ function printAttendanceOverview(filters) {
 function renderAttendanceOverview(filters) {
   const sessions = getFilteredAttendanceSessions(filters);
   const rows = getBrotherAttendanceRows(sessions, filters);
+  const compactViewport = isCompactViewport();
   qs("#reportsContent").innerHTML = `
     <article class="panel-card report-main-card">
       <div class="report-summary-head">
@@ -952,37 +957,52 @@ function renderAttendanceOverview(filters) {
       <div class="report-section-block">
         <h3 class="section-title report-section-title">Frequ&ecirc;ncia por irm&atilde;os</h3>
         ${rows.length ? `
-          <div class="table-wrap report-table-wrap">
-            <table class="attendance-ranking-table">
-              <thead>
-                <tr>
-                  <th class="attendance-brother-head">Irm&atilde;o</th>
-                  <th class="attendance-cim-head">CIM</th>
-                  <th class="attendance-count-head"><span class="desktop-only">Frequ&ecirc;ncia</span><span class="mobile-only">Freq.</span></th>
-                  <th class="attendance-percentage-head"><span class="desktop-only">Porcentagem</span><span class="mobile-only">Procent.</span></th>
-                  <th class="attendance-action-head"></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows.map((row) => `
+          ${compactViewport ? `
+            <div class="attendance-mobile-list">
+              ${rows.map((row) => `
+                <article class="attendance-mobile-card">
+                  <div class="attendance-mobile-name">${escapeHtml(row.brother.name)}</div>
+                  <div class="attendance-mobile-metrics">
+                    <div><span>Freq.</span><strong>${row.present}</strong></div>
+                    <div><span>Procent.</span><strong>${row.percentage}%</strong></div>
+                  </div>
+                  <button type="button" class="table-action-btn attendance-mobile-action" data-report-detail="${row.brother.id}">Detalhes</button>
+                </article>
+              `).join("")}
+            </div>
+          ` : `
+            <div class="table-wrap report-table-wrap">
+              <table class="attendance-ranking-table">
+                <thead>
                   <tr>
-                    <td class="attendance-brother-cell">${escapeHtml(row.brother.name)}</td>
-                    <td class="attendance-cim-cell">${escapeHtml(row.brother.cim)}</td>
-                    <td class="attendance-count-cell">${row.present}</td>
-                    <td class="attendance-percentage-cell">
-                      <div class="attendance-progress-cell">
-                        <span>${row.percentage}%</span>
-                        <div class="attendance-progress">
-                          <div class="attendance-progress-bar ${getProgressTone(row.percentage)}" style="width:${row.percentage}%"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="attendance-action-cell"><button type="button" class="table-action-btn" data-report-detail="${row.brother.id}">Detalhes</button></td>
+                    <th class="attendance-brother-head">Irm&atilde;o</th>
+                    <th class="attendance-cim-head">CIM</th>
+                    <th class="attendance-count-head"><span class="desktop-only">Frequ&ecirc;ncia</span><span class="mobile-only">Freq.</span></th>
+                    <th class="attendance-percentage-head"><span class="desktop-only">Porcentagem</span><span class="mobile-only">Procent.</span></th>
+                    <th class="attendance-action-head"></th>
                   </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${rows.map((row) => `
+                    <tr>
+                      <td class="attendance-brother-cell">${escapeHtml(row.brother.name)}</td>
+                      <td class="attendance-cim-cell">${escapeHtml(row.brother.cim)}</td>
+                      <td class="attendance-count-cell">${row.present}</td>
+                      <td class="attendance-percentage-cell">
+                        <div class="attendance-progress-cell">
+                          <span>${row.percentage}%</span>
+                          <div class="attendance-progress">
+                            <div class="attendance-progress-bar ${getProgressTone(row.percentage)}" style="width:${row.percentage}%"></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="attendance-action-cell"><button type="button" class="table-action-btn" data-report-detail="${row.brother.id}">Detalhes</button></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `}
         ` : '<div class="empty-state">Nenhum irm&atilde;o encontrado para o grau e per&iacute;odo selecionados.</div>'}
       </div>
     </article>
