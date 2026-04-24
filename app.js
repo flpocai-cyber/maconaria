@@ -285,7 +285,6 @@ function renderPieChart(element, legendElement, items) {
 }
 
 function renderShell() {
-  qs("#todayLabel").textContent = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }).format(new Date());
   applyTheme(getStoredTheme());
   qs("#themeToggle").onclick = () => {
     const next = document.body.dataset.theme === "dark" ? "light" : "dark";

@@ -43,24 +43,18 @@
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
           <span id="themeToggleIcon">?</span>
         </button>
-        <button type="button" class="help-btn" aria-label="Ajuda">?</button>
-        <div class="profile-chip">
-          <div class="profile-avatar"><img src="logo-loja.png" alt="Logo da loja" class="profile-logo" onerror="this.style.display='none'; this.parentElement.classList.add('fallback-avatar'); this.parentElement.textContent='FP';"></div>
-          <div class="profile-meta">
-            <strong>F&aacute;bio Lu&iacute;s Pocai</strong>
-            <span id="todayLabel"></span>
-          </div>
-        </div>
       </div>
     </div>
 
-    <nav class="topnav">
-      <button class="menu-link active active-nav-item" data-view="dashboard">Painel</button>
-      <button class="menu-link" data-view="brothers">Irm&atilde;os</button>
-      <button class="menu-link" data-view="sessions">Sess&otilde;es</button>
-      <button class="menu-link" data-view="reports">Relat&oacute;rios</button>
-      <button class="menu-link" data-view="calendar">Calend&aacute;rio</button>
-    </nav>
+    <div class="topnav-wrap">
+      <nav class="topnav">
+        <button class="menu-link active active-nav-item" data-view="dashboard">Painel</button>
+        <button class="menu-link" data-view="brothers">Irm&atilde;os</button>
+        <button class="menu-link" data-view="sessions">Sess&otilde;es</button>
+        <button class="menu-link" data-view="reports">Relat&oacute;rios</button>
+        <button class="menu-link" data-view="calendar">Calend&aacute;rio</button>
+      </nav>
+    </div>
   </header>
 
   <main class="main-shell">
