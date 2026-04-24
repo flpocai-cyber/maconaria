@@ -1580,8 +1580,8 @@ tr:last-child td {
 
   .attendance-mobile-card {
     display: grid;
-    gap: 0.75rem;
-    padding: 0.9rem;
+    gap: 0.6rem;
+    padding: 0.75rem;
     border: 1px solid var(--line);
     border-radius: 16px;
     background: var(--panel);
@@ -1598,31 +1598,33 @@ tr:last-child td {
   .attendance-mobile-metrics {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   .attendance-mobile-metrics div {
     display: grid;
     gap: 0.2rem;
-    padding: 0.65rem 0.7rem;
+    padding: 0.5rem 0.55rem;
     border-radius: 12px;
     background: rgba(148, 163, 184, 0.08);
   }
 
   .attendance-mobile-metrics span {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted);
   }
 
   .attendance-mobile-metrics strong {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .attendance-mobile-action {
     width: 100%;
+    padding: 0.55rem 0.75rem;
+    min-height: 2.5rem;
   }
 
   .form-grid,

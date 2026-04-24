@@ -964,7 +964,7 @@ function renderAttendanceOverview(filters) {
                   <div class="attendance-mobile-name">${escapeHtml(row.brother.name)}</div>
                   <div class="attendance-mobile-metrics">
                     <div><span>Freq.</span><strong>${row.present}</strong></div>
-                    <div><span>Procent.</span><strong>${row.percentage}%</strong></div>
+                    <div><span>Porcent.</span><strong>${row.percentage}%</strong></div>
                   </div>
                   <button type="button" class="table-action-btn attendance-mobile-action" data-report-detail="${row.brother.id}">Detalhes</button>
                 </article>
