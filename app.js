@@ -740,6 +740,7 @@ function getInitialReportRange() {
 function getAttendanceReportFilters() {
   return {
     degree: qs("#reportDegreeFilter")?.value || "",
+    brotherId: qs("#reportBrotherFilter")?.value || "",
     dateFrom: qs("#reportDateFrom")?.value || "",
     dateTo: qs("#reportDateTo")?.value || ""
   };
@@ -755,7 +756,11 @@ function getFilteredAttendanceSessions(filters) {
 }
 
 function getFilteredAttendanceBrothers(filters) {
-  return state.brothers.filter((brother) => !filters.degree || brother.degree === filters.degree);
+  return state.brothers.filter((brother) => {
+    if (filters.degree && brother.degree !== filters.degree) return false;
+    if (filters.brotherId && brother.id !== filters.brotherId) return false;
+    return true;
+  });
 }
 
 function buildAttendanceLineChart(sessions) {
@@ -992,10 +997,14 @@ function buildAttendanceReport() {
   const initial = getInitialReportRange();
   qs("#reportDateFrom").value = initial.dateFrom;
   qs("#reportDateTo").value = initial.dateTo;
+  qs("#reportBrotherFilter").innerHTML = `<option value="">Escolha um irmão</option>${[...state.brothers]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((brother) => `<option value="${escapeHtml(brother.id)}">${escapeHtml(brother.name)}</option>`).join("")}`;
   const renderAttendance = () => renderAttendanceOverview(getAttendanceReportFilters());
   qs("#attendanceFilterBtn").onclick = renderAttendance;
   qs("#attendancePrintBtn").onclick = () => printAttendanceOverview(getAttendanceReportFilters());
   qs("#reportDegreeFilter").onchange = renderAttendance;
+  qs("#reportBrotherFilter").onchange = renderAttendance;
   qs("#reportDateFrom").onchange = renderAttendance;
   qs("#reportDateTo").onchange = renderAttendance;
   renderAttendance();
