@@ -958,17 +958,22 @@ function renderAttendanceOverview(filters) {
         <h3 class="section-title report-section-title">Frequ&ecirc;ncia por irm&atilde;os</h3>
         ${rows.length ? `
           ${compactViewport ? `
-            <div class="attendance-mobile-list">
+            <div class="table-wrap report-mobile-wrap">
+              <div class="attendance-mobile-list">
+                <div class="attendance-mobile-head">
+                  <span>Irmão</span>
+                  <span>Freq.</span>
+                  <span>Porcent.</span>
+                </div>
               ${rows.map((row) => `
-                <article class="attendance-mobile-card">
+                <article class="attendance-mobile-row">
                   <div class="attendance-mobile-name">${escapeHtml(row.brother.name)}</div>
-                  <div class="attendance-mobile-metrics">
-                    <div><span>Freq.</span><strong>${row.present}</strong></div>
-                    <div><span>Porcent.</span><strong>${row.percentage}%</strong></div>
-                  </div>
+                  <strong class="attendance-mobile-value">${row.present}</strong>
+                  <strong class="attendance-mobile-value">${row.percentage}%</strong>
                   <button type="button" class="table-action-btn attendance-mobile-action" data-report-detail="${row.brother.id}">Detalhes</button>
                 </article>
               `).join("")}
+              </div>
             </div>
           ` : `
             <div class="table-wrap report-table-wrap">
