@@ -1691,10 +1691,12 @@ tr:last-child td {
   }
 
   .report-main-card {
-    padding: 1rem;
+    padding: 0;
+    overflow: hidden;
   }
 
   .report-summary-head {
+    padding: 1rem 1rem 0;
     font-size: 0.95rem;
     line-height: 1.35;
   }
@@ -1720,6 +1722,11 @@ tr:last-child td {
   .reports-shell > .panel-card {
     width: 100%;
     max-width: 100%;
+  }
+
+  .report-section-block {
+    margin-top: 0;
+    padding: 1rem;
   }
 
   .report-line-chart text {
