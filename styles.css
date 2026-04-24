@@ -1624,7 +1624,9 @@ tr:last-child td {
   }
 
   .attendance-mobile-action {
-    width: 100%;
+    width: 33.333%;
+    min-width: 110px;
+    justify-self: center;
     padding: 0.55rem 0.75rem;
     min-height: 2.5rem;
   }
