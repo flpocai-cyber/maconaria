@@ -1598,7 +1598,7 @@ tr:last-child td {
   .attendance-mobile-metrics {
     display: grid;
     grid-template-columns: repeat(2, max-content);
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.4rem;
   }
 
@@ -1626,7 +1626,7 @@ tr:last-child td {
   .attendance-mobile-action {
     width: 33.333%;
     min-width: 110px;
-    justify-self: center;
+    justify-self: start;
     padding: 0.55rem 0.75rem;
     min-height: 2.5rem;
   }
