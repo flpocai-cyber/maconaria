@@ -962,10 +962,10 @@ function renderAttendanceOverview(filters) {
               <tbody>
                 ${rows.map((row) => `
                   <tr>
-                    <td>${escapeHtml(row.brother.name)}</td>
-                    <td>${escapeHtml(row.brother.cim)}</td>
-                    <td>${row.present}</td>
-                    <td>
+                    <td class="attendance-brother-cell">${escapeHtml(row.brother.name)}</td>
+                    <td class="attendance-cim-cell">${escapeHtml(row.brother.cim)}</td>
+                    <td class="attendance-count-cell">${row.present}</td>
+                    <td class="attendance-percentage-cell">
                       <div class="attendance-progress-cell">
                         <span>${row.percentage}%</span>
                         <div class="attendance-progress">
@@ -973,7 +973,7 @@ function renderAttendanceOverview(filters) {
                         </div>
                       </div>
                     </td>
-                    <td><button type="button" class="table-action-btn" data-report-detail="${row.brother.id}">Detalhes</button></td>
+                    <td class="attendance-action-cell"><button type="button" class="table-action-btn" data-report-detail="${row.brother.id}">Detalhes</button></td>
                   </tr>
                 `).join("")}
               </tbody>

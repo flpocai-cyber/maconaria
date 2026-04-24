@@ -1640,7 +1640,9 @@ tr:last-child td {
   }
 
   .report-table-wrap table {
-    min-width: 640px;
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
   }
 
   #visitorsReportTable .table-wrap table {
@@ -1652,7 +1654,60 @@ tr:last-child td {
   #visitorsReportTable th,
   #visitorsReportTable td {
     padding: 0.8rem 0.75rem;
+    white-space: normal;
+  }
+
+  .attendance-brother-cell {
+    width: 34%;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .attendance-cim-cell,
+  .attendance-count-cell,
+  .attendance-percentage-cell {
     white-space: nowrap;
+  }
+
+  .attendance-cim-cell {
+    width: 16%;
+  }
+
+  .attendance-count-cell {
+    width: 14%;
+  }
+
+  .attendance-percentage-cell {
+    width: 18%;
+  }
+
+  .attendance-action-cell {
+    width: 18%;
+    text-align: right;
+  }
+
+  .attendance-progress {
+    display: none;
+  }
+
+  .attendance-progress-cell {
+    justify-content: flex-start;
+  }
+
+  .attendance-progress-cell span {
+    min-width: 0;
+    font-size: 0.96rem;
+  }
+
+  .attendance-action-cell .table-action-btn {
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
   }
 
   .toolbar-input,
