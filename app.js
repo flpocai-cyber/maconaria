@@ -155,6 +155,38 @@ async function loadState() {
   sortSessions();
 }
 
+function renderSectionLoading(containerId, title, lines = 3) {
+  const container = qs(`#${containerId}`);
+  if (!container) return;
+  container.innerHTML = `
+    <article class="panel-card loading-panel" aria-busy="true">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Carregando</p>
+          <h2 class="section-title">${escapeHtml(title)}</h2>
+        </div>
+      </div>
+      <div class="loading-stack">
+        ${Array.from({ length: lines }, () => `
+          <div class="loading-row">
+            <div class="loading-line loading-line-title"></div>
+            <div class="loading-line"></div>
+            <div class="loading-line loading-line-short"></div>
+          </div>
+        `).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderLoadingState() {
+  renderSectionLoading("dashboard", "Painel", 4);
+  renderSectionLoading("brothers", "Irmãos", 5);
+  renderSectionLoading("sessions", "Sessões", 5);
+  renderSectionLoading("reports", "Relatórios", 4);
+  renderSectionLoading("calendar", "Calendário", 4);
+}
+
 function showMessage(message) { window.alert(message); }
 
 function buildBirthdayEvent(name, type, dateString, year, today) {
@@ -293,7 +325,7 @@ function renderDashboard() {
 
   const upcoming = collectBirthdayEvents().slice(0, 6);
   qs("#birthdayHighlights").innerHTML = upcoming.length ? upcoming.map((item) => `<div class="birthday-row"><div><strong>${escapeHtml(item.name)}</strong><div class="muted">${escapeHtml(item.type)}</div></div><strong>${item.dateLabel}</strong></div>`).join("") : '<div class="empty-state">Nenhum anivers\u00e1rio cadastrado.</div>';
-  renderBirthdayCalendar(qs("#dashboardCalendar"), 4);
+  renderBirthdayCalendar(qs("#dashboardCalendar"));
 }
 function renderBrothers() {
   qs("#brothers").innerHTML = qs("#brothersTemplate").innerHTML;
@@ -1185,7 +1217,7 @@ function renderBirthdayCalendar(container) {
 
 function renderCalendar() {
   qs("#calendar").innerHTML = qs("#calendarTemplate").innerHTML;
-  renderBirthdayCalendar(qs("#calendarContent"), 12);
+  renderBirthdayCalendar(qs("#calendarContent"));
 }
 
 function render() {
@@ -1199,6 +1231,8 @@ function render() {
 }
 
 async function init() {
+  renderShell();
+  renderLoadingState();
   try {
     await loadState();
     render();
