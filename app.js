@@ -952,11 +952,11 @@ function renderAttendanceOverview(filters) {
             <table class="attendance-ranking-table">
               <thead>
                 <tr>
-                  <th>Irm&atilde;o</th>
-                  <th>CIM</th>
-                  <th>Frequ&ecirc;ncia</th>
-                  <th>Porcentagem</th>
-                  <th></th>
+                  <th class="attendance-brother-head">Irm&atilde;o</th>
+                  <th class="attendance-cim-head">CIM</th>
+                  <th class="attendance-count-head"><span class="desktop-only">Frequ&ecirc;ncia</span><span class="mobile-only">Freq.</span></th>
+                  <th class="attendance-percentage-head"><span class="desktop-only">Porcentagem</span><span class="mobile-only">Procent.</span></th>
+                  <th class="attendance-action-head"></th>
                 </tr>
               </thead>
               <tbody>
