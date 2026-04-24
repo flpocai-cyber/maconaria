@@ -77,6 +77,10 @@ function escapeHtml(value) {
 }
 function monthLabel(date) { return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date); }
 function capitalize(value) { return value ? value.charAt(0).toUpperCase() + value.slice(1) : ""; }
+function formatMonthKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; }
+function isSameMonth(dateA, dateB) { return dateA.getFullYear() === dateB.getFullYear() && dateA.getMonth() === dateB.getMonth(); }
+function isSameDate(dateA, dateB) { return dateA.getFullYear() === dateB.getFullYear() && dateA.getMonth() === dateB.getMonth() && dateA.getDate() === dateB.getDate(); }
+function getWeekdayLabels() { return ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]; }
 function getStoredTheme() { return localStorage.getItem("theme-mode") || "light"; }
 function applyTheme(mode) {
   document.body.dataset.theme = mode;
@@ -171,6 +175,47 @@ function collectBirthdayEvents() {
     if (brother.wifeName && brother.wifeBirthDate) events.push(buildBirthdayEvent(brother.wifeName, `Esposa de ${brother.name}`, brother.wifeBirthDate, year, today));
   });
   return events.filter(Boolean).sort((a, b) => a.sortKey - b.sortKey);
+}
+
+function getCalendarViewDate(container) {
+  const year = Number(container.dataset.calendarYear);
+  const month = Number(container.dataset.calendarMonth);
+  if (Number.isInteger(year) && Number.isInteger(month) && month >= 0 && month <= 11) return new Date(year, month, 1);
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function setCalendarViewDate(container, date) {
+  container.dataset.calendarYear = String(date.getFullYear());
+  container.dataset.calendarMonth = String(date.getMonth());
+}
+
+function buildMonthGrid(viewDate, monthEvents) {
+  const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+  const lastDay = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const totalDays = lastDay.getDate();
+  const totalCells = Math.ceil((startOffset + totalDays) / 7) * 7;
+  const eventsByDay = monthEvents.reduce((acc, event) => {
+    acc[event.day] = acc[event.day] || [];
+    acc[event.day].push(event);
+    return acc;
+  }, {});
+  const today = new Date();
+  const monthStart = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+  return Array.from({ length: totalCells }, (_, index) => {
+    const dayOffset = index - startOffset;
+    const cellDate = new Date(monthStart.getFullYear(), monthStart.getMonth(), dayOffset + 1);
+    const dayKey = String(cellDate.getDate()).padStart(2, "0");
+    const inCurrentMonth = cellDate.getMonth() === viewDate.getMonth();
+    return {
+      date: cellDate,
+      label: cellDate.getDate(),
+      inCurrentMonth,
+      isToday: inCurrentMonth && isSameDate(cellDate, today),
+      events: inCurrentMonth ? (eventsByDay[dayKey] || []) : []
+    };
+  });
 }
 
 function calculateGlobalAttendanceRate() {
@@ -1071,14 +1116,71 @@ function buildVisitorsReport() {
   renderVisitors();
 }
 
-function renderBirthdayCalendar(container, monthsToShow) {
-  const now = new Date();
+function renderBirthdayCalendar(container) {
+  const viewDate = getCalendarViewDate(container);
+  setCalendarViewDate(container, viewDate);
   const events = collectBirthdayEvents();
-  const months = Array.from({ length: monthsToShow }, (_, index) => new Date(now.getFullYear(), now.getMonth() + index, 1));
-  container.innerHTML = `<div class="calendar-grid">${months.map((date) => {
-    const monthEvents = events.filter((event) => event.yearReference === date.getFullYear() && event.month === date.getMonth());
-    return `<div class="calendar-month"><h4>${escapeHtml(capitalize(monthLabel(date)))}</h4><div class="calendar-days">${monthEvents.length ? monthEvents.map((event) => `<div class="calendar-row"><div><strong>${escapeHtml(event.name)}</strong><div class="muted">${escapeHtml(event.type)}</div></div><strong>${event.day}</strong></div>`).join("") : '<div class="empty-state">Sem anivers\u00e1rios neste m\u00eas.</div>'}</div></div>`;
-  }).join("")}</div>`;
+  const monthEvents = events.filter((event) => formatMonthKey(viewDate) === `${event.yearReference}-${String(event.month + 1).padStart(2, "0")}`);
+  const days = buildMonthGrid(viewDate, monthEvents);
+  const now = new Date();
+  const isCurrentMonthView = isSameMonth(viewDate, now);
+  const weekdayLabels = getWeekdayLabels();
+
+  container.innerHTML = `
+    <div class="calendar-widget">
+      <div class="calendar-toolbar">
+        <div>
+          <p class="calendar-kicker">Visualização mensal</p>
+          <h3 class="calendar-current-label">${escapeHtml(capitalize(monthLabel(viewDate)))}</h3>
+        </div>
+        <div class="calendar-nav">
+          <button type="button" class="calendar-nav-btn" data-calendar-nav="prev" aria-label="Mês anterior">&#8249;</button>
+          <button type="button" class="calendar-today-btn${isCurrentMonthView ? " is-active" : ""}" data-calendar-nav="today">Mês atual</button>
+          <button type="button" class="calendar-nav-btn" data-calendar-nav="next" aria-label="Próximo mês">&#8250;</button>
+        </div>
+      </div>
+      <div class="calendar-layout">
+        <section class="calendar-month-board" aria-label="Calendário mensal">
+          <div class="calendar-weekdays">${weekdayLabels.map((label) => `<span>${label}</span>`).join("")}</div>
+          <div class="calendar-month-grid">${days.map((day) => `
+            <article class="calendar-day-cell${day.inCurrentMonth ? "" : " is-outside"}${day.isToday ? " is-today" : ""}${day.events.length ? " has-events" : ""}">
+              <div class="calendar-day-head">
+                <strong>${day.label}</strong>
+                ${day.events.length ? `<span class="calendar-day-badge">${day.events.length}</span>` : ""}
+              </div>
+              <div class="calendar-day-events">
+                ${day.events.slice(0, 2).map((event) => `<span title="${escapeHtml(`${event.name} - ${event.type}`)}">${escapeHtml(event.name)}</span>`).join("")}
+                ${day.events.length > 2 ? `<span class="calendar-day-more">+${day.events.length - 2} mais</span>` : ""}
+              </div>
+            </article>
+          `).join("")}</div>
+        </section>
+        <aside class="calendar-agenda">
+          <div class="calendar-agenda-header">
+            <h4>Aniversários do mês</h4>
+            <span>${monthEvents.length ? `${monthEvents.length} ${monthEvents.length === 1 ? "registro" : "registros"}` : "Sem registros"}</span>
+          </div>
+          <div class="calendar-days">
+            ${monthEvents.length ? monthEvents.map((event) => `<div class="calendar-row"><div><strong>${escapeHtml(event.name)}</strong><div class="muted">${escapeHtml(event.type)}</div></div><strong>${event.day}</strong></div>`).join("") : '<div class="empty-state">Sem aniversários neste mês.</div>'}
+          </div>
+        </aside>
+      </div>
+    </div>
+  `;
+
+  qs('[data-calendar-nav="prev"]', container).onclick = () => {
+    setCalendarViewDate(container, new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+    renderBirthdayCalendar(container);
+  };
+  qs('[data-calendar-nav="next"]', container).onclick = () => {
+    setCalendarViewDate(container, new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+    renderBirthdayCalendar(container);
+  };
+  qs('[data-calendar-nav="today"]', container).onclick = () => {
+    const today = new Date();
+    setCalendarViewDate(container, new Date(today.getFullYear(), today.getMonth(), 1));
+    renderBirthdayCalendar(container);
+  };
 }
 
 function renderCalendar() {
