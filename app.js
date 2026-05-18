@@ -363,14 +363,20 @@ function getFilteredBrothersForPresenceList() {
 function printBrotherPresenceList() {
   const brothers = getFilteredBrothersForPresenceList();
   const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
-  const sessionSubject = window.prompt("Sobre o que \u00e9 a sess\u00e3o?", "Sess\u00e3o de Vota\u00e7\u00e3o");
-  if (sessionSubject === null) return;
-  const sessionDate = window.prompt("Data da sess\u00e3o (AAAA-MM-DD ou DD/MM/AAAA)", getTodayInputDate());
-  if (sessionDate === null) return;
-
   const printWindow = window.open("", "_blank", "width=960,height=720");
   if (!printWindow) {
-    showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o.");
+    showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o. Verifique se o navegador bloqueou pop-ups para este site.");
+    return;
+  }
+
+  const sessionSubject = window.prompt("Sobre o que \u00e9 a sess\u00e3o?", "Sess\u00e3o de Vota\u00e7\u00e3o");
+  if (sessionSubject === null) {
+    printWindow.close();
+    return;
+  }
+  const sessionDate = window.prompt("Data da sess\u00e3o (AAAA-MM-DD ou DD/MM/AAAA)", getTodayInputDate());
+  if (sessionDate === null) {
+    printWindow.close();
     return;
   }
 
