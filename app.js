@@ -72,6 +72,13 @@ function formatDate(value, withTime = false) {
   if (Number.isNaN(date.getTime())) return "-";
   return new Intl.DateTimeFormat("pt-BR", withTime ? { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" } : { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
+function getTodayInputDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 function escapeHtml(value) {
   return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
@@ -334,10 +341,155 @@ function renderBrothers() {
   qs("#brotherSearch").addEventListener("input", renderFilteredBrothers);
   qs("#brotherDegreeFilter").addEventListener("change", renderFilteredBrothers);
   qs("#brotherFilterBtn").onclick = renderFilteredBrothers;
+  qs("#printPresenceListBtn").onclick = printBrotherPresenceList;
   qs("#openBrotherFormBtn").onclick = () => {
     buildBrotherForm();
     qs("#brotherFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+}
+
+function getFilteredBrothersForPresenceList() {
+  const term = qs("#brotherSearch")?.value.trim().toLowerCase() || "";
+  const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
+  return state.brothers
+    .filter((brother) => {
+      const matchesTerm = [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term));
+      const matchesDegree = !selectedDegree || brother.degree === selectedDegree;
+      return matchesTerm && matchesDegree;
+    })
+    .sort((a, b) => getDegreeLabel(a.degree).localeCompare(getDegreeLabel(b.degree)) || a.name.localeCompare(b.name));
+}
+
+function printBrotherPresenceList() {
+  const brothers = getFilteredBrothersForPresenceList();
+  const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
+  const sessionSubject = window.prompt("Sobre o que \u00e9 a sess\u00e3o?", "Sess\u00e3o de Vota\u00e7\u00e3o");
+  if (sessionSubject === null) return;
+  const sessionDate = window.prompt("Data da sess\u00e3o (AAAA-MM-DD ou DD/MM/AAAA)", getTodayInputDate());
+  if (sessionDate === null) return;
+
+  const printWindow = window.open("", "_blank", "width=960,height=720");
+  if (!printWindow) {
+    showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o.");
+    return;
+  }
+
+  const logoUrl = new URL("logo-loja.png", window.location.href).toString();
+  const degreeLabel = selectedDegree ? getDegreeLabel(selectedDegree) : "Todos os graus";
+  const dateLabel = sessionDate.includes("-") ? formatDate(`${sessionDate}T00:00`) : sessionDate;
+  const rowsHtml = brothers.length ? brothers.map((brother) => `
+    <tr>
+      <td class="name-cell">${escapeHtml(brother.name)}</td>
+      <td>${escapeHtml(brother.cim || "")}</td>
+      <td>${escapeHtml(getDegreeLabel(brother.degree))}</td>
+      <td class="signature-cell"></td>
+    </tr>
+  `).join("") : '<tr><td colspan="4">Nenhum irm\u00e3o encontrado para os filtros selecionados.</td></tr>';
+
+  printWindow.document.write(`<!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Lista de Presen\u00e7a</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #111827;
+        margin: 28px;
+      }
+      .print-header {
+        text-align: center;
+        margin-bottom: 22px;
+      }
+      .print-header img {
+        width: 96px;
+        height: 96px;
+        object-fit: contain;
+        margin-bottom: 10px;
+      }
+      .print-header h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      .print-header h2 {
+        margin: 12px 0 8px;
+        font-size: 24px;
+        text-transform: uppercase;
+      }
+      .print-meta {
+        margin: 3px 0;
+        color: #374151;
+        font-size: 14px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        border: 1px solid #9ca3af;
+        padding: 9px 10px;
+        text-align: left;
+        vertical-align: middle;
+      }
+      th {
+        background: #f3f4f6;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+      td {
+        height: 34px;
+        font-size: 14px;
+      }
+      .name-cell {
+        width: 40%;
+      }
+      .signature-cell {
+        width: 34%;
+        height: 42px;
+      }
+      @media print {
+        body {
+          margin: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="print-header">
+      <img src="${logoUrl}" alt="Logo da loja">
+      <h1>A.'.R.'.G.'.E.'.D.'.P.'.M.'.L.'.S.'. F\u00e9, Esperan\u00e7a e Caridade 100</h1>
+      <h2>Lista de Presen\u00e7a</h2>
+      <p class="print-meta"><strong>Sess\u00e3o:</strong> ${escapeHtml(sessionSubject.trim() || "Sess\u00e3o")}</p>
+      <p class="print-meta"><strong>Data:</strong> ${escapeHtml(dateLabel || "-")} | <strong>Grau:</strong> ${escapeHtml(degreeLabel)}</p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome do irm\u00e3o</th>
+          <th>CIM</th>
+          <th>Grau</th>
+          <th>Assinatura</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+  </body>
+  </html>`);
+  printWindow.document.close();
+  const triggerPrint = () => {
+    printWindow.focus();
+    printWindow.print();
+  };
+  const logo = printWindow.document.querySelector("img");
+  if (logo) {
+    logo.onload = () => setTimeout(triggerPrint, 150);
+    logo.onerror = () => triggerPrint();
+  } else {
+    triggerPrint();
+  }
 }
 
 function buildBrotherForm(editId = "") {
