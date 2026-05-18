@@ -363,22 +363,10 @@ function getFilteredBrothersForPresenceList() {
 function printBrotherPresenceList() {
   const brothers = getFilteredBrothersForPresenceList();
   const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
-  const printWindow = window.open("", "_blank", "width=960,height=720");
-  if (!printWindow) {
-    showMessage("N\u00e3o foi poss\u00edvel abrir a janela de impress\u00e3o. Verifique se o navegador bloqueou pop-ups para este site.");
-    return;
-  }
-
   const sessionSubject = window.prompt("Sobre o que \u00e9 a sess\u00e3o?", "Sess\u00e3o de Vota\u00e7\u00e3o");
-  if (sessionSubject === null) {
-    printWindow.close();
-    return;
-  }
+  if (sessionSubject === null) return;
   const sessionDate = window.prompt("Data da sess\u00e3o (AAAA-MM-DD ou DD/MM/AAAA)", getTodayInputDate());
-  if (sessionDate === null) {
-    printWindow.close();
-    return;
-  }
+  if (sessionDate === null) return;
 
   const logoUrl = new URL("logo-loja.png", window.location.href).toString();
   const degreeLabel = selectedDegree ? getDegreeLabel(selectedDegree) : "Todos os graus";
@@ -392,7 +380,26 @@ function printBrotherPresenceList() {
     </tr>
   `).join("") : '<tr><td colspan="4">Nenhum irm\u00e3o encontrado para os filtros selecionados.</td></tr>';
 
-  printWindow.document.write(`<!DOCTYPE html>
+  const printFrame = document.createElement("iframe");
+  printFrame.style.position = "fixed";
+  printFrame.style.right = "0";
+  printFrame.style.bottom = "0";
+  printFrame.style.width = "0";
+  printFrame.style.height = "0";
+  printFrame.style.border = "0";
+  printFrame.setAttribute("aria-hidden", "true");
+  document.body.appendChild(printFrame);
+
+  const frameWindow = printFrame.contentWindow;
+  const frameDocument = frameWindow?.document;
+  if (!frameWindow || !frameDocument) {
+    printFrame.remove();
+    showMessage("N\u00e3o foi poss\u00edvel preparar a lista para impress\u00e3o.");
+    return;
+  }
+
+  frameDocument.open();
+  frameDocument.write(`<!DOCTYPE html>
   <html lang="pt-BR">
   <head>
     <meta charset="utf-8">
@@ -484,13 +491,23 @@ function printBrotherPresenceList() {
     </table>
   </body>
   </html>`);
-  printWindow.document.close();
-  const triggerPrint = () => {
-    printWindow.focus();
-    printWindow.print();
+  frameDocument.close();
+
+  const removePrintFrame = () => {
+    setTimeout(() => printFrame.remove(), 500);
   };
-  const logo = printWindow.document.querySelector("img");
+  const triggerPrint = () => {
+    frameWindow.focus();
+    frameWindow.print();
+    removePrintFrame();
+  };
+  frameWindow.onafterprint = removePrintFrame;
+  const logo = frameDocument.querySelector("img");
   if (logo) {
+    if (logo.complete) {
+      setTimeout(triggerPrint, 150);
+      return;
+    }
     logo.onload = () => setTimeout(triggerPrint, 150);
     logo.onerror = () => triggerPrint();
   } else {
