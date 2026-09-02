@@ -795,6 +795,10 @@ tr:last-child td {
   min-width: 108px;
 }
 
+.emeritus-toolbar-btn {
+  min-width: 210px;
+}
+
 .sessions-table-card {
   padding: 0;
   overflow: hidden;
@@ -803,6 +807,44 @@ tr:last-child td {
 .brothers-table-card {
   padding: 0;
   overflow: hidden;
+}
+
+.emeritus-list-card {
+  padding: 1.25rem;
+}
+
+.emeritus-list-header {
+  align-items: center;
+}
+
+.emeritus-list-toolbar {
+  justify-content: flex-end;
+}
+
+.emeritus-table-wrap {
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.emeritus-table {
+  min-width: 860px;
+}
+
+.emeritus-table th,
+.emeritus-table td {
+  padding: 0.85rem 1rem;
+}
+
+.date-cell-current {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+  font-weight: 800;
+}
+
+.date-cell-next {
+  background: #dcfce7 !important;
+  color: #14532d !important;
+  font-weight: 800;
 }
 
 .report-main-card {

@@ -365,10 +365,177 @@ function renderBrothers() {
   qs("#brotherDegreeFilter").addEventListener("change", renderFilteredBrothers);
   qs("#brotherFilterBtn").onclick = renderFilteredBrothers;
   qs("#printPresenceListBtn").onclick = printBrotherPresenceList;
+  qs("#openEmeritusListBtn").onclick = () => {
+    const card = qs("#emeritusListCard");
+    card?.classList.toggle("hidden");
+    if (!card?.classList.contains("hidden")) {
+      buildEmeritusList();
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  qs("#emeritusYearFilter").addEventListener("input", () => buildEmeritusList());
+  qs("#emeritusYearFilterBtn").onclick = () => buildEmeritusList();
+  qs("#emeritusPrintBtn").onclick = printEmeritusList;
   qs("#openBrotherFormBtn").onclick = () => {
     buildBrotherForm();
     qs("#brotherFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+}
+
+function getEmeritusRows() {
+  const yearFilter = qs("#emeritusYearFilter")?.value.trim() || "";
+  return [...state.brothers]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter((brother) => {
+      if (!yearFilter) return true;
+      return [brother.emeritoDate, brother.benemeritoDate].some((value) => value?.slice(0, 4) === yearFilter);
+    })
+    .map((brother) => ({
+      brother,
+      initiationDate: brother.initiationDate ? formatDate(`${brother.initiationDate}T00:00`) : "",
+      emeritoDate: brother.initiationDate && brother.emeritoDate ? formatDate(`${brother.emeritoDate}T00:00`) : "",
+      benemeritoDate: brother.initiationDate && brother.benemeritoDate ? formatDate(`${brother.benemeritoDate}T00:00`) : "",
+      emeritoTone: brother.initiationDate ? getDateYearTone(brother.emeritoDate) : "",
+      benemeritoTone: brother.initiationDate ? getDateYearTone(brother.benemeritoDate) : ""
+    }));
+}
+
+function buildEmeritusList() {
+  const rows = getEmeritusRows();
+  const yearFilter = qs("#emeritusYearFilter")?.value.trim() || "";
+  qs("#emeritusListContent").innerHTML = `
+    <div class="report-summary-head">
+      <strong>${rows.length} irm\u00e3o${rows.length === 1 ? "" : "s"}</strong>
+      <span class="muted">${yearFilter ? `com data de Em\u00e9rito ou Benem\u00e9rito em ${escapeHtml(yearFilter)}` : "listados no quadro atual"}</span>
+    </div>
+    ${rows.length ? `
+      <div class="table-wrap emeritus-table-wrap">
+        <table class="emeritus-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CIM</th>
+              <th>Grau</th>
+              <th>Inicia\u00e7\u00e3o</th>
+              <th>Em\u00e9rito</th>
+              <th>Benem\u00e9rito</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.brother.name)}</strong></td>
+                <td>${escapeHtml(row.brother.cim || "")}</td>
+                <td>${escapeHtml(getDegreeLabel(row.brother.degree))}</td>
+                <td>${escapeHtml(row.initiationDate)}</td>
+                <td class="${row.emeritoTone ? `date-cell-${row.emeritoTone}` : ""}">${escapeHtml(row.emeritoDate)}</td>
+                <td class="${row.benemeritoTone ? `date-cell-${row.benemeritoTone}` : ""}">${escapeHtml(row.benemeritoDate)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    ` : '<div class="empty-state">Nenhum irm\u00e3o encontrado para o ano informado.</div>'}
+  `;
+}
+
+function printEmeritusList() {
+  const rows = getEmeritusRows();
+  const yearFilter = qs("#emeritusYearFilter")?.value.trim() || "";
+  const logoUrl = new URL("logo-loja.png", window.location.href).toString();
+  const rowsHtml = rows.length ? rows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.brother.name)}</td>
+      <td>${escapeHtml(row.brother.cim || "")}</td>
+      <td>${escapeHtml(getDegreeLabel(row.brother.degree))}</td>
+      <td>${escapeHtml(row.initiationDate)}</td>
+      <td>${escapeHtml(row.emeritoDate)}</td>
+      <td>${escapeHtml(row.benemeritoDate)}</td>
+    </tr>
+  `).join("") : '<tr><td colspan="6">Nenhum irm\u00e3o encontrado para o ano informado.</td></tr>';
+
+  const printFrame = document.createElement("iframe");
+  printFrame.style.position = "fixed";
+  printFrame.style.right = "0";
+  printFrame.style.bottom = "0";
+  printFrame.style.width = "0";
+  printFrame.style.height = "0";
+  printFrame.style.border = "0";
+  printFrame.setAttribute("aria-hidden", "true");
+  document.body.appendChild(printFrame);
+
+  const frameWindow = printFrame.contentWindow;
+  const frameDocument = frameWindow?.document;
+  if (!frameWindow || !frameDocument) {
+    printFrame.remove();
+    showMessage("N\u00e3o foi poss\u00edvel preparar a lista para impress\u00e3o.");
+    return;
+  }
+
+  frameDocument.open();
+  frameDocument.write(`<!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Em\u00e9ritos e Benem\u00e9ritos</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #111827; margin: 28px; }
+      .print-header { text-align: center; margin-bottom: 22px; }
+      .print-header img { width: 92px; height: 92px; object-fit: contain; margin-bottom: 10px; }
+      .print-header h1 { margin: 0; font-size: 21px; }
+      .print-header h2 { margin: 12px 0 8px; font-size: 23px; text-transform: uppercase; }
+      .print-meta { margin: 0; color: #374151; font-size: 14px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #9ca3af; padding: 8px 9px; text-align: left; vertical-align: middle; }
+      th { background: #f3f4f6; font-size: 12px; text-transform: uppercase; }
+      td { font-size: 13px; }
+      @media print { body { margin: 18px; } }
+    </style>
+  </head>
+  <body>
+    <div class="print-header">
+      <img src="${logoUrl}" alt="Logo da loja">
+      <h1>A.'.R.'.G.'.E.'.D.'.P.'.M.'.L.'.S.'. F\u00e9, Esperan\u00e7a e Caridade 100</h1>
+      <h2>Em\u00e9ritos e Benem\u00e9ritos</h2>
+      <p class="print-meta">${yearFilter ? `Ano: ${escapeHtml(yearFilter)}` : "Todos os irm\u00e3os do quadro"}</p>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CIM</th>
+          <th>Grau</th>
+          <th>Inicia\u00e7\u00e3o</th>
+          <th>Em\u00e9rito</th>
+          <th>Benem\u00e9rito</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </body>
+  </html>`);
+  frameDocument.close();
+
+  const removePrintFrame = () => {
+    setTimeout(() => printFrame.remove(), 500);
+  };
+  const triggerPrint = () => {
+    frameWindow.focus();
+    frameWindow.print();
+    removePrintFrame();
+  };
+  frameWindow.onafterprint = removePrintFrame;
+  const logo = frameDocument.querySelector("img");
+  if (logo) {
+    if (logo.complete) {
+      setTimeout(triggerPrint, 150);
+      return;
+    }
+    logo.onload = () => setTimeout(triggerPrint, 150);
+    logo.onerror = () => triggerPrint();
+  } else {
+    triggerPrint();
+  }
 }
 
 function getFilteredBrothersForPresenceList() {
