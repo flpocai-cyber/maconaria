@@ -607,6 +607,26 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(138, 0, 0, 0.08);
 }
 
+input.date-highlight-current {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #78350f;
+  font-weight: 700;
+}
+
+input.date-highlight-next {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #14532d;
+  font-weight: 700;
+}
+
+.brother-age-field input[readonly] {
+  background: #f8fafc;
+  color: var(--secondary);
+  font-weight: 700;
+}
+
 textarea {
   min-height: 92px;
   resize: vertical;

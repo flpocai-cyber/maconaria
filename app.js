@@ -79,6 +79,24 @@ function getTodayInputDate() {
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+function calculateAge(birthDate, referenceDate = new Date()) {
+  if (!birthDate) return "";
+  const birth = new Date(`${birthDate}T00:00`);
+  if (Number.isNaN(birth.getTime())) return "";
+  let age = referenceDate.getFullYear() - birth.getFullYear();
+  const birthdayThisYear = new Date(referenceDate.getFullYear(), birth.getMonth(), birth.getDate());
+  if (referenceDate < birthdayThisYear) age -= 1;
+  return age;
+}
+function getDateYearTone(value, referenceDate = new Date()) {
+  if (!value) return "";
+  const date = new Date(`${value}T00:00`);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  if (year === referenceDate.getFullYear()) return "current";
+  if (year === referenceDate.getFullYear() + 1) return "next";
+  return "";
+}
 function escapeHtml(value) {
   return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
@@ -135,6 +153,11 @@ function textField(name, label, value = "", required = false, className = "field
 }
 function dateField(name, label, value = "", required = false, className = "field") {
   return `<div class="${className}"><label for="${name}">${label}</label><input type="date" id="${name}" name="${name}" value="${escapeHtml(value)}" ${required ? "required" : ""}></div>`;
+}
+function highlightedDateField(name, label, value = "", required = false, className = "field") {
+  const tone = getDateYearTone(value);
+  const inputClass = tone ? ` class="date-highlight-${tone}"` : "";
+  return `<div class="${className}"><label for="${name}">${label}</label><input type="date" id="${name}" name="${name}" value="${escapeHtml(value)}"${inputClass} ${required ? "required" : ""}></div>`;
 }
 function datetimeField(name, label, value = "", required = false, className = "field") {
   return `<div class="${className}"><label for="${name}">${label}</label><input type="datetime-local" id="${name}" name="${name}" value="${escapeHtml(value)}" ${required ? "required" : ""}></div>`;
@@ -517,6 +540,7 @@ function printBrotherPresenceList() {
 
 function buildBrotherForm(editId = "") {
   const brother = state.brothers.find((item) => item.id === editId) || {};
+  const age = calculateAge(brother.birthDate);
   qs("#brotherForm").innerHTML = `
     ${textField("name", "Nome", brother.name, true)}
     ${textField("treatmentName", "Nome de tratamento", brother.treatmentName)}
@@ -530,8 +554,9 @@ function buildBrotherForm(editId = "") {
     ${dateField("initiationDate", "Data de Inicia\u00e7\u00e3o", brother.initiationDate)}
     ${dateField("elevationDate", "Data de Eleva\u00e7\u00e3o", brother.elevationDate)}
     ${dateField("exaltationDate", "Data de Exalta\u00e7\u00e3o", brother.exaltationDate)}
-    ${dateField("emeritoDate", "Data de Em\u00e9rito", brother.emeritoDate)}
-    ${dateField("benemeritoDate", "Data de Benem\u00e9rito", brother.benemeritoDate)}
+    ${highlightedDateField("emeritoDate", "Data de Em\u00e9rito", brother.emeritoDate)}
+    <div class="field brother-age-field"><label for="brotherAge">Idade atual</label><input id="brotherAge" value="${age === "" ? "" : `${age} anos`}" readonly></div>
+    ${highlightedDateField("benemeritoDate", "Data de Benem\u00e9rito", brother.benemeritoDate)}
     <div class="field-wide"><label>Esposa</label></div>
     ${textField("wifeName", "Nome da esposa", brother.wifeName)}
     ${dateField("wifeBirthDate", "Anivers\u00e1rio da esposa", brother.wifeBirthDate)}
@@ -542,6 +567,11 @@ function buildBrotherForm(editId = "") {
       <button type="button" class="btn-secondary" id="resetBrotherForm">Limpar</button>
     </div>
   `;
+
+  qs("#birthDate").onchange = (event) => {
+    const currentAge = calculateAge(event.currentTarget.value);
+    qs("#brotherAge").value = currentAge === "" ? "" : `${currentAge} anos`;
+  };
 
   qs("#brotherForm").onsubmit = async (event) => {
     event.preventDefault();
