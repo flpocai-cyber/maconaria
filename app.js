@@ -97,6 +97,12 @@ function getDateYearTone(value, referenceDate = new Date()) {
   if (year === referenceDate.getFullYear() + 1) return "next";
   return "";
 }
+function turnsAgeThisYear(birthDate, targetAge, referenceDate = new Date()) {
+  if (!birthDate) return false;
+  const birth = new Date(`${birthDate}T00:00`);
+  if (Number.isNaN(birth.getTime())) return false;
+  return birth.getFullYear() + targetAge === referenceDate.getFullYear();
+}
 function escapeHtml(value) {
   return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
@@ -392,6 +398,8 @@ function getEmeritusRows() {
     })
     .map((brother) => ({
       brother,
+      age: calculateAge(brother.birthDate),
+      ageTone: turnsAgeThisYear(brother.birthDate, 65) ? "current" : "",
       initiationDate: brother.initiationDate ? formatDate(`${brother.initiationDate}T00:00`) : "",
       emeritoDate: brother.initiationDate && brother.emeritoDate ? formatDate(`${brother.emeritoDate}T00:00`) : "",
       benemeritoDate: brother.initiationDate && brother.benemeritoDate ? formatDate(`${brother.benemeritoDate}T00:00`) : "",
@@ -415,6 +423,7 @@ function buildEmeritusList() {
             <tr>
               <th>Nome</th>
               <th>CIM</th>
+              <th>Idade</th>
               <th>Grau</th>
               <th>Inicia\u00e7\u00e3o</th>
               <th>Em\u00e9rito</th>
@@ -426,6 +435,7 @@ function buildEmeritusList() {
               <tr>
                 <td><strong>${escapeHtml(row.brother.name)}</strong></td>
                 <td>${escapeHtml(row.brother.cim || "")}</td>
+                <td class="${row.ageTone ? `age-cell-${row.ageTone}` : ""}">${row.age === "" ? "" : `${row.age} anos`}</td>
                 <td>${escapeHtml(getDegreeLabel(row.brother.degree))}</td>
                 <td>${escapeHtml(row.initiationDate)}</td>
                 <td class="${row.emeritoTone ? `date-cell-${row.emeritoTone}` : ""}">${escapeHtml(row.emeritoDate)}</td>
@@ -447,12 +457,13 @@ function printEmeritusList() {
     <tr>
       <td>${escapeHtml(row.brother.name)}</td>
       <td>${escapeHtml(row.brother.cim || "")}</td>
+      <td class="${row.ageTone ? "highlight-current" : ""}">${row.age === "" ? "" : `${row.age} anos`}</td>
       <td>${escapeHtml(getDegreeLabel(row.brother.degree))}</td>
       <td>${escapeHtml(row.initiationDate)}</td>
       <td>${escapeHtml(row.emeritoDate)}</td>
       <td>${escapeHtml(row.benemeritoDate)}</td>
     </tr>
-  `).join("") : '<tr><td colspan="6">Nenhum irm\u00e3o encontrado para o ano informado.</td></tr>';
+  `).join("") : '<tr><td colspan="7">Nenhum irm\u00e3o encontrado para o ano informado.</td></tr>';
 
   const printFrame = document.createElement("iframe");
   printFrame.style.position = "fixed";
@@ -489,6 +500,7 @@ function printEmeritusList() {
       th, td { border: 1px solid #9ca3af; padding: 8px 9px; text-align: left; vertical-align: middle; }
       th { background: #f3f4f6; font-size: 12px; text-transform: uppercase; }
       td { font-size: 13px; }
+      .highlight-current { background: #fef3c7; color: #78350f; font-weight: 700; }
       @media print { body { margin: 18px; } }
     </style>
   </head>
@@ -504,6 +516,7 @@ function printEmeritusList() {
         <tr>
           <th>Nome</th>
           <th>CIM</th>
+          <th>Idade</th>
           <th>Grau</th>
           <th>Inicia\u00e7\u00e3o</th>
           <th>Em\u00e9rito</th>

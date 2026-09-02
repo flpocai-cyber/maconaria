@@ -827,7 +827,7 @@ tr:last-child td {
 }
 
 .emeritus-table {
-  min-width: 860px;
+  min-width: 940px;
 }
 
 .emeritus-table th,
@@ -836,6 +836,12 @@ tr:last-child td {
 }
 
 .date-cell-current {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+  font-weight: 800;
+}
+
+.age-cell-current {
   background: #fef3c7 !important;
   color: #78350f !important;
   font-weight: 800;
