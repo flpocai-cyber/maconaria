@@ -27,7 +27,7 @@
   </script>
   <link rel="icon" type="image/png" href="logo-loja.png">
   <link rel="apple-touch-icon" href="logo-loja.png">
-  <link rel="stylesheet" href="styles.css?v=20260902-03">
+  <link rel="stylesheet" href="styles.css?v=20261027-02">
 </head>
 <body class="bg-background text-secondary">
   <header class="site-header">
@@ -147,6 +147,7 @@
           <button type="button" class="btn-secondary toolbar-search-btn" id="brotherFilterBtn">Buscar</button>
           <button type="button" class="btn-secondary toolbar-search-btn" id="printPresenceListBtn">Imprimir</button>
           <button type="button" class="btn-secondary toolbar-search-btn emeritus-toolbar-btn" id="openEmeritusListBtn">Em&eacute;ritos e Benem&eacute;ritos</button>
+          <button type="button" class="btn-secondary toolbar-search-btn" id="openDormantBrothersBtn">Irm&atilde;os adormecidos</button>
           <button type="button" class="btn btn-add-session" id="openBrotherFormBtn">Cadastrar</button>
         </div>
       </section>
@@ -168,6 +169,16 @@
 
       <article class="panel-card brothers-table-card">
         <div id="brothersTable"></div>
+      </article>
+
+      <article class="panel-card dormant-brothers-card hidden" id="dormantBrothersCard">
+        <div class="panel-header">
+          <div>
+            <p class="section-kicker">Arquivo do quadro</p>
+            <h2 class="section-title">Irm&atilde;os adormecidos</h2>
+          </div>
+        </div>
+        <div id="dormantBrothersTable"></div>
       </article>
 
       <article class="panel-card" id="brotherFormCard">
@@ -210,7 +221,10 @@
               <p class="section-kicker">Sess&atilde;o</p>
               <h2 class="section-title">Cadastro e edi&ccedil;&atilde;o</h2>
             </div>
-            <button type="button" class="btn-secondary form-modal-close" id="closeSessionFormBtn">Fechar</button>
+            <div class="session-modal-actions">
+              <span id="attendanceSelectionCount" class="attendance-selection-count" aria-live="polite">0 irm&atilde;os</span>
+              <button type="button" class="btn-secondary form-modal-close" id="closeSessionFormBtn">Fechar</button>
+            </div>
           </div>
           <form id="sessionForm" class="form-grid"></form>
         </article>
@@ -271,7 +285,7 @@
     </div>
   </template>
 
-  <script src="app.js?v=20260902-03"></script>
+  <script src="app.js?v=20261027-02"></script>
 </body>
 </html>
 

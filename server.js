@@ -59,6 +59,7 @@ function validateSession(input) {
 function normalizeBrother(input) {
   return {
     id: input.id || randomUUID(),
+    active: input.active !== false,
     name: String(input.name || "").trim(),
     address: String(input.address || "").trim(),
     phone: String(input.phone || "").trim(),
@@ -98,10 +99,11 @@ function canAttendSession(brotherDegree, sessionDegree) {
   return order[brotherDegree] >= order[sessionDegree];
 }
 
-function sanitizeSessionAttendance(session, brothers) {
+function sanitizeSessionAttendance(session, brothers, previouslyPresent = []) {
+  const previouslyPresentIds = new Set(previouslyPresent);
   const eligibleIds = new Set(
     brothers
-      .filter((brother) => canAttendSession(brother.degree, session.degree))
+      .filter((brother) => (brother.active !== false || previouslyPresentIds.has(brother.id)) && canAttendSession(brother.degree, session.degree))
       .map((brother) => brother.id)
   );
 
@@ -111,7 +113,9 @@ function sanitizeSessionAttendance(session, brothers) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/store") {
-    return sendJson(res, 200, await readStore());
+    const store = await readStore();
+    store.brothers = store.brothers.map((brother) => ({ active: true, ...brother }));
+    return sendJson(res, 200, store);
   }
 
   if (req.method === "POST" && url.pathname === "/api/brothers") {
@@ -138,10 +142,30 @@ async function handleApi(req, res, url) {
   if (req.method === "DELETE" && url.pathname.startsWith("/api/brothers/")) {
     const id = decodeURIComponent(url.pathname.split("/").pop());
     const store = await readStore();
-    store.brothers = store.brothers.filter((brother) => brother.id !== id);
-    store.sessions = store.sessions.map((session) => ({ ...session, attendance: session.attendance.filter((brotherId) => brotherId !== id) }));
+    let found = false;
+    store.brothers = store.brothers.map((brother) => {
+      if (brother.id !== id) return brother;
+      found = true;
+      return { ...brother, active: false };
+    });
+    if (!found) return notFound(res);
     await writeStore(store);
-    return sendJson(res, 200, { ok: true });
+    return sendJson(res, 200, { id, active: false });
+  }
+
+  if (req.method === "PATCH" && url.pathname.startsWith("/api/brothers/")) {
+    const id = decodeURIComponent(url.pathname.split("/").pop());
+    const body = await parseBody(req);
+    const store = await readStore();
+    let found = false;
+    store.brothers = store.brothers.map((brother) => {
+      if (brother.id !== id) return brother;
+      found = true;
+      return { ...brother, active: body.active === true };
+    });
+    if (!found) return notFound(res);
+    await writeStore(store);
+    return sendJson(res, 200, { id, active: body.active === true });
   }
 
   if (req.method === "POST" && url.pathname === "/api/sessions") {
@@ -162,7 +186,8 @@ async function handleApi(req, res, url) {
     const body = normalizeSession({ ...(await parseBody(req)), id });
     const error = validateSession(body);
     if (error) return sendJson(res, 400, { error });
-    sanitizeSessionAttendance(body, store.brothers);
+    const previousSession = store.sessions.find((session) => session.id === id);
+    sanitizeSessionAttendance(body, store.brothers, previousSession?.attendance || []);
     store.sessions = store.sessions.map((session) => session.id === id ? body : session);
     store.sessions.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
     await writeStore(store);

@@ -59,12 +59,25 @@ function closeSessionFormModal() {
   modal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
 }
+function updateAttendanceSelectionCount(formElement = qs("#sessionForm")) {
+  const count = qsa('input[name="attendance"]:checked', formElement).length + Number(formElement.dataset.preservedAttendanceCount || 0);
+  const counter = qs("#attendanceSelectionCount");
+  if (counter) counter.textContent = `${count} ${count === 1 ? "irmão" : "irmãos"}`;
+}
 function canAttendSession(brotherDegree, sessionDegree) {
   const order = { aprendiz: 1, companheiro: 2, mestre: 3 };
   return order[brotherDegree] >= order[sessionDegree];
 }
-function getEligibleBrothers(sessionDegree) {
-  return state.brothers.filter((brother) => canAttendSession(brother.degree, sessionDegree));
+function getEligibleBrothers(sessionDegree, includeDormant = false) {
+  return state.brothers
+    .filter((brother) => (includeDormant || brother.active !== false) && canAttendSession(brother.degree, sessionDegree))
+    .sort(compareBrotherNames);
+}
+function compareBrotherNames(a, b) {
+  return a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base", ignorePunctuation: true });
+}
+function displayBrotherName(name) {
+  return String(name || "").toLocaleUpperCase("pt-BR");
 }
 function formatDate(value, withTime = false) {
   if (!value) return "-";
@@ -343,7 +356,7 @@ function renderShell() {
 
 function renderDashboard() {
   qs("#dashboard").innerHTML = qs("#dashboardTemplate").innerHTML;
-  qs("#brothersCount").textContent = state.brothers.length;
+  qs("#brothersCount").textContent = state.brothers.filter((brother) => brother.active !== false).length;
   qs("#sessionsCount").textContent = state.sessions.length;
   qs("#visitorsCount").textContent = state.sessions.reduce((sum, session) => sum + session.visitors.length, 0);
   qs("#dashboardGreeting").textContent = `Frequ\u00eancia geral de ${calculateGlobalAttendanceRate()}%`;
@@ -382,6 +395,14 @@ function renderBrothers() {
   qs("#emeritusYearFilter").addEventListener("input", () => buildEmeritusList());
   qs("#emeritusYearFilterBtn").onclick = () => buildEmeritusList();
   qs("#emeritusPrintBtn").onclick = printEmeritusList;
+  qs("#openDormantBrothersBtn").onclick = () => {
+    const card = qs("#dormantBrothersCard");
+    card?.classList.toggle("hidden");
+    if (!card?.classList.contains("hidden")) {
+      buildDormantBrothersTable();
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
   qs("#openBrotherFormBtn").onclick = () => {
     buildBrotherForm();
     qs("#brotherFormCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -391,7 +412,8 @@ function renderBrothers() {
 function getEmeritusRows() {
   const yearFilter = qs("#emeritusYearFilter")?.value.trim() || "";
   return [...state.brothers]
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter((brother) => brother.active !== false)
+    .sort(compareBrotherNames)
     .filter((brother) => {
       if (!yearFilter) return true;
       return [brother.emeritoDate, brother.benemeritoDate].some((value) => value?.slice(0, 4) === yearFilter);
@@ -556,11 +578,12 @@ function getFilteredBrothersForPresenceList() {
   const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
   return state.brothers
     .filter((brother) => {
+      if (brother.active === false) return false;
       const matchesTerm = [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term));
       const matchesDegree = !selectedDegree || brother.degree === selectedDegree;
       return matchesTerm && matchesDegree;
     })
-    .sort((a, b) => getDegreeLabel(a.degree).localeCompare(getDegreeLabel(b.degree)) || a.name.localeCompare(b.name));
+    .sort(compareBrotherNames);
 }
 
 function printBrotherPresenceList() {
@@ -576,7 +599,7 @@ function printBrotherPresenceList() {
   const dateLabel = sessionDate.includes("-") ? formatDate(`${sessionDate}T00:00`) : sessionDate;
   const rowsHtml = brothers.length ? brothers.map((brother) => `
     <tr>
-      <td class="name-cell">${escapeHtml(brother.name)}</td>
+      <td class="name-cell">${escapeHtml(displayBrotherName(brother.name))}</td>
       <td>${escapeHtml(brother.cim || "")}</td>
       <td>${escapeHtml(getDegreeLabel(brother.degree))}</td>
       <td class="signature-cell"></td>
@@ -793,10 +816,11 @@ function buildBrothersTable(searchTerm) {
   const term = searchTerm.trim().toLowerCase();
   const selectedDegree = qs("#brotherDegreeFilter")?.value || "";
   const brothers = state.brothers.filter((brother) => {
+    if (brother.active === false) return false;
     const matchesTerm = [brother.name, brother.treatmentName, brother.cim, brother.cpf, brother.email, getDegreeLabel(brother.degree)].some((value) => String(value).toLowerCase().includes(term));
     const matchesDegree = !selectedDegree || brother.degree === selectedDegree;
     return matchesTerm && matchesDegree;
-  });
+  }).sort(compareBrotherNames);
   qs("#brothersTable").innerHTML = brothers.length ? `
     <div class="table-wrap brothers-table-wrap">
       <table class="brothers-table">
@@ -804,7 +828,7 @@ function buildBrothersTable(searchTerm) {
         <tbody>
           ${brothers.map((brother) => `
             <tr>
-              <td><strong>${escapeHtml(brother.name)}</strong></td>
+              <td><strong>${escapeHtml(displayBrotherName(brother.name))}</strong></td>
               <td><span class="badge ${brother.degree}">${escapeHtml(getDegreeLabel(brother.degree))}</span></td>
               <td>${escapeHtml(brother.cim)}</td>
               <td>
@@ -821,7 +845,7 @@ function buildBrothersTable(searchTerm) {
                   <div class="brother-detail-block">
                     <strong>Dados do irm\u00e3o</strong>
                     <div class="brother-detail-grid">
-                      <div><span class="muted">Nome</span><strong>${escapeHtml(brother.name || "-")}</strong></div>
+                      <div><span class="muted">Nome</span><strong>${escapeHtml(displayBrotherName(brother.name || "-"))}</strong></div>
                       <div><span class="muted">Tratamento</span><strong>${escapeHtml(brother.treatmentName || "-")}</strong></div>
                       <div><span class="muted">Grau</span><strong>${escapeHtml(getDegreeLabel(brother.degree))}</strong></div>
                       <div><span class="muted">CIM</span><strong>${escapeHtml(brother.cim || "-")}</strong></div>
@@ -869,10 +893,54 @@ function buildBrothersTable(searchTerm) {
   });
   qsa("[data-delete-brother]").forEach((button) => {
     button.onclick = async () => {
+      const brother = state.brothers.find((item) => item.id === button.dataset.deleteBrother);
+      const brotherName = brother ? displayBrotherName(brother.name) : "este irmão";
+      if (!window.confirm(`Tem certeza que deseja mover ${brotherName} para Irmãos adormecidos?`)) return;
       try {
         await api(`/api/brothers/${button.dataset.deleteBrother}`, { method: "DELETE" });
         await loadState();
         render();
+        qs("#dormantBrothersCard")?.classList.remove("hidden");
+        buildDormantBrothersTable();
+        qs("#dormantBrothersCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        showMessage(error.message);
+      }
+    };
+  });
+}
+
+function buildDormantBrothersTable() {
+  const dormantBrothers = state.brothers
+    .filter((brother) => brother.active === false)
+    .sort(compareBrotherNames);
+  qs("#dormantBrothersTable").innerHTML = dormantBrothers.length ? `
+    <div class="table-wrap brothers-table-wrap">
+      <table class="brothers-table">
+        <thead><tr><th>Nome</th><th>Grau</th><th>CIM</th><th>Opções</th></tr></thead>
+        <tbody>${dormantBrothers.map((brother) => `
+          <tr>
+            <td><strong>${escapeHtml(displayBrotherName(brother.name))}</strong></td>
+            <td><span class="badge ${brother.degree}">${escapeHtml(getDegreeLabel(brother.degree))}</span></td>
+            <td>${escapeHtml(brother.cim || "")}</td>
+            <td><button type="button" class="table-action-btn" data-reactivate-brother="${escapeHtml(brother.id)}">Reativar</button></td>
+          </tr>
+        `).join("")}</tbody>
+      </table>
+    </div>
+  ` : '<div class="empty-state">Não há irmãos adormecidos.</div>';
+
+  qsa("[data-reactivate-brother]").forEach((button) => {
+    button.onclick = async () => {
+      try {
+        await api(`/api/brothers/${button.dataset.reactivateBrother}`, {
+          method: "PATCH",
+          body: JSON.stringify({ active: true })
+        });
+        await loadState();
+        render();
+        qs("#dormantBrothersCard")?.classList.remove("hidden");
+        buildDormantBrothersTable();
       } catch (error) {
         showMessage(error.message);
       }
@@ -898,6 +966,10 @@ function renderSessions() {
 function buildSessionForm(editId = "", draft = null) {
   const session = draft || state.sessions.find((item) => item.id === editId) || { datetime: getDefaultSessionDatetime(), degree: "aprendiz", attendance: [], visitors: [] };
   const eligible = getEligibleBrothers(session.degree);
+  const preservedDormantAttendance = editId ? session.attendance.filter((id) => {
+    const brother = state.brothers.find((item) => item.id === id);
+    return brother?.active === false && canAttendSession(brother.degree, session.degree);
+  }) : [];
   let visitors = [...(session.visitors || [])];
   const isDarkTheme = document.body.dataset.theme === "dark";
   const darkPanelStyle = isDarkTheme ? ' style="background:#0f172a;border-color:#243247;"' : "";
@@ -910,11 +982,18 @@ function buildSessionForm(editId = "", draft = null) {
     ${selectField("degree", "Grau da sess\u00e3o", SESSION_LEVELS, session.degree, true)}
     ${textField("theme", "Tema", normalizeBrokenText(session.theme), true)}
     ${textareaField("notes", "Observa\u00e7\u00f5es", normalizeBrokenText(session.notes), "field-wide")}
-    <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"${darkPanelStyle}><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
+    <div class="field-wide"><label>Irm\u00e3os aptos para presen\u00e7a</label><div class="attendees-panel"${darkPanelStyle}><div class="attendee-grid">${eligible.length ? eligible.map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(displayBrotherName(brother.name))}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 CIM ${escapeHtml(brother.cim)}</div></div><label><input type="checkbox" name="attendance" value="${brother.id}" ${session.attendance.includes(brother.id) ? "checked" : ""}> Presente</label></div>`).join("") : '<div class="empty-state">Nenhum irm\u00e3o apto para este grau.</div>'}</div></div></div>
+    ${preservedDormantAttendance.length ? `<div class="field-wide"><label>Presenças históricas de irmãos adormecidos</label><div class="attendees-panel"><div class="attendee-grid">${preservedDormantAttendance.map((id) => { const brother = state.brothers.find((item) => item.id === id); return `<div class="attendee-row"><strong>${escapeHtml(displayBrotherName(brother.name))}</strong><span class="muted">${escapeHtml(getDegreeLabel(brother.degree))} \u2022 Adormecido</span></div>`; }).join("")}</div></div></div>` : ""}
     <div class="field-wide"><label>Visitantes</label><div class="visitors-panel"${darkPanelStyle}><div id="visitorsEditor"></div><div class="visitor-form-inline"${darkPanelStyle}><input id="visitorName" placeholder="Nome do visitante"><input id="visitorLodge" placeholder="A.R.L.S."><input id="visitorCity" placeholder="Cidade"><button type="button" class="btn-secondary" id="addVisitorBtn"${darkSecondaryButtonStyle}>Adicionar visitante</button></div></div></div>
     <input type="hidden" name="id" value="${escapeHtml(editId)}">
     <div class="form-actions"><button type="submit" class="btn">${editId ? "Salvar sess\u00e3o" : "Cadastrar sess\u00e3o"}</button><button type="button" class="btn-secondary" id="resetSessionForm"${darkSecondaryButtonStyle}>Limpar</button></div>
   `;
+
+  qsa('input[name="attendance"]', formElement).forEach((checkbox) => {
+    checkbox.addEventListener("change", () => updateAttendanceSelectionCount(formElement));
+  });
+  formElement.dataset.preservedAttendanceCount = String(preservedDormantAttendance.length);
+  updateAttendanceSelectionCount(formElement);
 
   const datetimeInput = qs("#datetime", formElement);
   const degreeInput = qs("#degree", formElement);
@@ -973,7 +1052,7 @@ function buildSessionForm(editId = "", draft = null) {
       degree: form.get("degree"),
       theme: String(form.get("theme") || "").trim(),
       notes: String(form.get("notes") || "").trim(),
-      attendance: form.getAll("attendance"),
+      attendance: [...form.getAll("attendance"), ...preservedDormantAttendance],
       visitors
     };
 
@@ -1041,7 +1120,7 @@ function buildSessionsList(searchTerm) {
                   <div class="attendees-panel">
                     <strong>Presen&ccedil;as</strong>
                     <div class="attendee-grid">
-                      ${getEligibleBrothers(session.degree).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(brother.name)}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irm\u00e3os aptos nesta sess\u00e3o.</div>'}
+                      ${getEligibleBrothers(session.degree, true).map((brother) => `<div class="attendee-row"><div><strong>${escapeHtml(displayBrotherName(brother.name))}</strong><div class="muted">${escapeHtml(getDegreeLabel(brother.degree))}${brother.active === false ? " \u2022 Adormecido" : ""}</div></div><button class="presence-toggle ${session.attendance.includes(brother.id) ? "active" : ""}" disabled>${session.attendance.includes(brother.id) ? "Presente" : "Ausente"}</button></div>`).join("") || '<div class="empty-state">Sem irm\u00e3os aptos nesta sess\u00e3o.</div>'}
                     </div>
                   </div>
                   <div class="visitors-panel">

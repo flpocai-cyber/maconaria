@@ -1,11 +1,11 @@
-const { updateBrother, deleteBrother } = require("../../lib/store");
+const { updateBrother, setBrotherActive } = require("../../lib/store");
 const { sendJson, parseBody, withErrorHandling } = require("../../lib/http");
 
 module.exports = async (req, res) => {
   await withErrorHandling(res, async () => {
     const id = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
     if (!id) {
-      sendJson(res, 400, { error: "ID inv·lido." });
+      sendJson(res, 400, { error: "ID invÔøΩlido." });
       return;
     }
 
@@ -16,11 +16,19 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === "DELETE") {
-      await deleteBrother(id);
-      sendJson(res, 200, { ok: true });
+      const brother = await setBrotherActive(id, false);
+      sendJson(res, brother ? 200 : 404, brother || { error: "Irm√£o n√£o encontrado." });
       return;
     }
 
-    sendJson(res, 405, { error: "MÈtodo n„o permitido." });
+    if (req.method === "PATCH") {
+      const body = await parseBody(req);
+      const brother = await setBrotherActive(id, body.active === true);
+      sendJson(res, brother ? 200 : 404, brother || { error: "Irm√£o n√£o encontrado." });
+      return;
+    }
+
+    sendJson(res, 405, { error: "MÔøΩtodo nÔøΩo permitido." });
   });
 };
+

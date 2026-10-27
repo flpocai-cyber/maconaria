@@ -1236,6 +1236,23 @@ tr:last-child td {
   background: inherit;
 }
 
+.session-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.attendance-selection-count {
+  color: var(--secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dormant-brothers-card {
+  padding: 1.25rem;
+}
+
 .form-modal-close {
   min-width: 110px;
 }
